@@ -1,0 +1,10 @@
+//
+// Created by cutie on 28.08.26.
+//
+
+#ifndef TERMIA_CONSOLECONSTANTS_H
+#define TERMIA_CONSOLECONSTANTS_H
+
+#define CONSOLE_CLEAR "\033[H\033[2J"
+
+#endif //TERMIA_CONSOLECONSTANTS_H
