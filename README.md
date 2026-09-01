@@ -13,6 +13,7 @@ Feature Ideas / TODO:
 - Terminal Argument support
 - Better Timing Handling
 - Units Tests
+- Support for multiple vsrg chart formats
 
 
 How to use:
