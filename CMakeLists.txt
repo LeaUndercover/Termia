@@ -9,16 +9,16 @@ add_executable(Termia main.cpp
         UI/TUIManager.h
         UI/TUIMenu.cpp
         UI/TUIMenu.h
-        Menus/Menu_Main.cpp
-        Menus/Menu_Main.h
+        UI/Menus/Menu_Main.cpp
+        UI/Menus/Menu_Main.h
         UI/TerminalHelper.cpp
         UI/TerminalHelper.h
-        Menus/Menu_SongSelect.cpp
-        Menus/Menu_SongSelect.h
-        Menus/Menu_Options.cpp
-        Menus/Menu_Options.h
-        Menus/Menu_Play.cpp
-        Menus/Menu_Play.h
+        UI/Menus/Menu_SongSelect.cpp
+        UI/Menus/Menu_SongSelect.h
+        UI/Menus/Menu_Options.cpp
+        UI/Menus/Menu_Options.h
+        UI/Menus/Menu_Play.cpp
+        UI/Menus/Menu_Play.h
         Game/Chart.cpp
         Game/Chart.h
         Game/Note.cpp
