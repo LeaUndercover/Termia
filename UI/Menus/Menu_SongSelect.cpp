@@ -9,10 +9,10 @@
 
 #include "Menu_Main.h"
 #include "Menu_Play.h"
-#include "../Game/ChartManager.h"
-#include "../UI/ConsoleConstants.h"
-#include "../UI/TerminalHelper.h"
-#include "../UI/TUIManager.h"
+#include "../../Game/ChartManager.h"
+#include "../ConsoleConstants.h"
+#include "../TerminalHelper.h"
+#include "../TUIManager.h"
 
 void Menu_SongSelect::onPathChange() {
     auto chartManager = ChartManager::GetInstance();

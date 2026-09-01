@@ -8,10 +8,10 @@
 #include <sstream>
 
 #include "Menu_Main.h"
-#include "../Game/TermiaConfig.h"
-#include "../UI/ConsoleConstants.h"
-#include "../UI/TerminalHelper.h"
-#include "../UI/TUIManager.h"
+#include "../../Game/TermiaConfig.h"
+#include "../ConsoleConstants.h"
+#include "../TerminalHelper.h"
+#include "../TUIManager.h"
 
 std::string Menu_Options::getName() {
     return "Options";

@@ -6,10 +6,10 @@
 #define TERMIA_MENU_PLAY_H
 #include <chrono>
 
-#include "../Game/AudioManager.h"
-#include "../Game/Chart.h"
-#include "../Game/TermiaConfig.h"
-#include "../UI/TUIMenu.h"
+#include "../../Game/AudioManager.h"
+#include "../../Game/Chart.h"
+#include "../../Game/TermiaConfig.h"
+#include "../TUIMenu.h"
 
 
 class Menu_Play: public TUIMenu {

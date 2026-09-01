@@ -1,7 +1,7 @@
 #include <iostream>
 
 #include "Game/AudioManager.h"
-#include "Menus/Menu_Main.h"
+#include "UI/Menus/Menu_Main.h"
 #include "UI/TUIManager.h"
 
 int main() {

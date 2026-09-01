@@ -6,8 +6,8 @@
 #define TERMIA_MENU_SONGSELECT_H
 #include <filesystem>
 
-#include "../Game/Chart.h"
-#include "../UI/TUIMenu.h"
+#include "../../Game/Chart.h"
+#include "../TUIMenu.h"
 
 
 class Menu_SongSelect : public TUIMenu {

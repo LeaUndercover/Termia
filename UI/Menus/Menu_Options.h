@@ -4,7 +4,7 @@
 
 #ifndef TERMIA_MENU_OPTIONS_H
 #define TERMIA_MENU_OPTIONS_H
-#include "../UI/TUIMenu.h"
+#include "../TUIMenu.h"
 
 
 class Menu_Options : public TUIMenu {

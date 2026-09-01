@@ -9,11 +9,11 @@
 #include <sstream>
 
 #include "Menu_Main.h"
-#include "../Game/Hold.h"
-#include "../Game/TermiaConfig.h"
-#include "../UI/ConsoleConstants.h"
-#include "../UI/TerminalHelper.h"
-#include "../UI/TUIManager.h"
+#include "../../Game/Hold.h"
+#include "../../Game/TermiaConfig.h"
+#include "../ConsoleConstants.h"
+#include "../TerminalHelper.h"
+#include "../TUIManager.h"
 
 void Menu_Play::onMiss(GameObject *object) {
     _combo=0;
