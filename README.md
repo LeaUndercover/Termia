@@ -2,6 +2,8 @@
 
 Termia is a Vertical Scrolling Rhythm Game(VSRG) Client for the Terminal.
 
+This Project was made as a fun way spending time learning a bit of c++ for my exam, the project and structure itself is quite rushed, stuff like timing handling would for example need to read the timestamp from the keyevent instead of relying on the delta frame time.
+
 Current Support:
 - Basic 4k osu!mania maps (extracted folders)
 
