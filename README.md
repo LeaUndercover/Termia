@@ -12,6 +12,7 @@ Feature Ideas / TODO:
 - Config saving
 - Terminal Argument support
 - Better Timing Handling
+- Units Tests
 
 
 How to use:
