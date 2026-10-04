@@ -1,10 +1,6 @@
-//
-// Created by cutie on 29.08.26.
-//
-
 #include "Hold.h"
-
 #include <cmath>
+using namespace CORE;
 
 std::pair<int,int> Hold::QuantizePosition(double curTime, double scrollSpeedMS, int positions) const {
     const auto deltaStart = _time - curTime;

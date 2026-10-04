@@ -9,8 +9,8 @@
 #include <sstream>
 
 #include "Menu_Main.h"
-#include "../../Game/Hold.h"
-#include "../../Game/TermiaConfig.h"
+#include "../../CORE/Hold.h"
+#include "../../CORE/TermiaConfig.h"
 #include "../ConsoleConstants.h"
 #include "../TerminalHelper.h"
 #include "../TUIManager.h"

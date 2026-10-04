@@ -7,10 +7,10 @@
 #include <chrono>
 
 #include "../../Game/AudioManager.h"
-#include "../../Game/Chart.h"
-#include "../../Game/TermiaConfig.h"
+#include "../../CORE/Chart.h"
+#include "../../CORE/TermiaConfig.h"
 #include "../TUIMenu.h"
-
+using namespace CORE;
 
 class Menu_Play: public TUIMenu {
 private:

@@ -3,6 +3,7 @@
 //
 
 #include "ChartManager.h"
+using namespace CORE;
 
 ChartManager* ChartManager::_instance = nullptr;
 

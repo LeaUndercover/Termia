@@ -1,15 +1,10 @@
-//
-// Created by cutie on 28.08.26.
-//
-
 #include "Chart.h"
 #include <sstream>
 #include <vector>
 #include <string>
 #include <fstream>
 #include <iostream>
-
-#include "Hold.h"
+using namespace CORE;
 
 std::vector<std::string> split(const std::string& line, char delimiter)
 {
