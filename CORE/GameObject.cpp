@@ -1,8 +1,5 @@
-//
-// Created by cutie on 29.08.26.
-//
-
 #include "GameObject.h"
+using namespace CORE;
 
 int GameObject::GetLane() const {
     return _lane;

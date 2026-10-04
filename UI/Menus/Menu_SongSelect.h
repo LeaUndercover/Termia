@@ -6,7 +6,7 @@
 #define TERMIA_MENU_SONGSELECT_H
 #include <filesystem>
 
-#include "../../Game/Chart.h"
+#include "../../CORE/Chart.h"
 #include "../TUIMenu.h"
 
 

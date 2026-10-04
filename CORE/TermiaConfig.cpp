@@ -1,8 +1,5 @@
-//
-// Created by cutie on 29.08.26.
-//
-
 #include "TermiaConfig.h"
+using namespace CORE;
 
 TermiaConfig* TermiaConfig::_instance = nullptr;
 
