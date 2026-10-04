@@ -16,10 +16,11 @@
 
 void Menu_SongSelect::onPathChange() {
     auto chartManager = ChartManager::GetInstance();
+    auto config = TermiaConfig::GetInstance();
 
     chartManager->Clear();
 
-    for (auto const& dir_entry : std::filesystem::recursive_directory_iterator{_path}) {
+    for (auto const& dir_entry : std::filesystem::recursive_directory_iterator{config->GetSearchPath()}) {
         if (!std::string(dir_entry.path().filename()).ends_with(".osu"))
             continue;
 

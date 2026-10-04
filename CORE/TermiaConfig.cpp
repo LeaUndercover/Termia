@@ -1,18 +1,32 @@
 #include "TermiaConfig.h"
+
+#include <utility>
 using namespace CORE;
 
 TermiaConfig* TermiaConfig::_instance = nullptr;
 
-void TermiaConfig::SetSpeed(float speed) {
+void TermiaConfig::SetSpeed(const float speed) {
     _speed=speed;
 }
 
-void TermiaConfig::SetVolume(float volume) {
+void TermiaConfig::SetVolume(const float volume) {
     _volume=volume;
 }
 
-void TermiaConfig::SetScrollSpeed(float scrollSpeed) {
+void TermiaConfig::SetScrollSpeed(const float scrollSpeed) {
     _scrollSpeed=scrollSpeed;
+}
+
+void TermiaConfig::SetKeys(std::vector<int> keys) {
+    _keys=std::move(keys);
+}
+
+void TermiaConfig::SetQuitKey(int key) {
+    _keyQuit = key;
+}
+
+void TermiaConfig::SetSearchPath(std::string path) {
+    _searchPath=std::move(path);
 }
 
 TermiaConfig *TermiaConfig::GetInstance()
@@ -37,4 +51,16 @@ float TermiaConfig::GetScrollSpeedMS() const {
 
 float TermiaConfig::GetVolume() const {
     return _volume;
+}
+
+std::vector<int> TermiaConfig::GetKeys() const {
+    return _keys;
+}
+
+int TermiaConfig::GetQuitKey() const {
+    return _keyQuit;
+}
+
+std::string TermiaConfig::GetSearchPath() const {
+    return _searchPath;
 }
