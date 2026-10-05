@@ -10,6 +10,7 @@
 class Menu_Options : public TUIMenu {
 private:
     unsigned _selected = 0;
+    unsigned _subSelected = 0;
 public:
     std::string getName() override;
     void onDraw() override;
