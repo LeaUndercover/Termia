@@ -1,89 +1,95 @@
 #ifndef NIKREND_H_INCLUDED
 #define NIKREND_H_INCLUDED
 
+#include "../Game/GameObject.h" //TODO: needs to be changed to CORE as this branch is pre that
+#include "nikrend_datatypes.h"
+#include <ncurses.h>
 #include <string>
 #include <tuple>
 #include <vector>
 
-// this is in here so that i can declare object format easily incase we want to
-// draw anything other than notes, like maybe some fancy 3d main menu :3
-// otherwise could be moved out of header along with class object
-namespace geom {
-    struct vec3 {
-        float x;
-        float y;
-        float z;
-    };
-    struct vec2 {
-        float x;
-        float y;
-    };
-    struct rotation {
-        float x;
-        float y;
-        float z;
-    };
-    class point {
-      public:
-        geom::vec3 pos;
-    };
-    class face {
-      public:
-        std::vector<int> pindex;
-    };
-    class bounding_box {
-      public:
-        geom::vec2 vmin;
-        geom::vec2 vmax;
-    };
-} // namespace geom
+using namespace geom;
 
 namespace nikrend {
-    // can stylize notes and holdes differently
-    enum type {
-        reg,
-        hold
-    };
-    // for drawing notes
-    class note {
-      public:
-        nikrend::type type;
-        int lane;        // 1 - 4
-        float start_pos; // float 0 <-> 1; 0 = note appears at top, 1 = note reached hit line;
-        float length;    // for holds, same float 0 <-> 1 system as position
-    };
-    // for directly drawing 3d objects
-    class object {
-      public:
-        std::vector<geom::point> verts;
-        std::vector<geom::face> faces;
-    };
-    // renderer modes
     enum mode {
         m_standard,
         m_2d,
         m_3d,
     };
-    // enable/disable ncurses terminal stuff -> std to revert terminal to normal
-    void set_terminal_mode(nikrend::mode mode);
+} // namespace nikrend
 
-    // pass terminal size to renderer
+class renderer {
+  private:
+    // datatypes
+    struct term_size {
+        unsigned int x;
+        unsigned int y;
+    };
+    enum type {
+        reg,
+        hold
+    };
+
+    // internal persistents
+    nikrend::mode terminal_mode;
+    term_size terminal_size;
+    float ur_history[4] = {0, 0, 0, 0};
+    vec3 camera_pos = {
+        0,
+        5, // 10
+        0,
+    };
+    rotation camera_rot = {
+        -0.5, //-0.5
+        0,
+        0,
+    };
+    signed int last_hit;
+
+    // internal functions
+    term_size get_terminal_size();
+    vec2 project_v(vec3 v);
+    vec2 world_to_screen(vec2 v);
+    void draw_line(vec2 p1, vec2 p2, const char *ch);
+    bounding_box get_bounding_box(std::vector<vec2> points);
+    void rasterize_tri(std::vector<vec2> tri_points);
+    void rasterize_projected_face(std::vector<vec2> points);
+    float calc_min_z(int vert_y_offset);
+    void draw_object(nikrend::object object);
+    float get_note_width();
+    void draw_lane_dividers_2d();
+    void draw_lane_dividers_3d();
+    void draw_hit_banner();
+    void draw_ur();
+
+  public:
+    // constructor
+    renderer(const nikrend::mode mode): terminal_mode(mode), terminal_size(get_terminal_size()) {};
+
+    // datatypes
+    enum alignment {
+        left,
+        center,
+        right,
+    };
+
+    // functions
+    void set_terminal_mode(const nikrend::mode mode);
     void set_terminal_size(std::pair<unsigned int, unsigned int> terminal_size); // x, y
 
-    void draw(); // call screen update once everything else has been set
-
-    // use this to pass notes into the renderer -> look at the struct for details
-    void add_note_to_render_buffer(nikrend::note note);
-
-    // call this on click
-    void draw_hit(int lane, float unstable_rate, signed int hit_value);
-    // lane 1-4; pass in ur; hit value equates to 300/50/0, negative means click but no note
-
-    // draw the top banner thingy
+    //! call each frame -> add notes before calling anything else
+    void add_note_to_render_buffer(const GameObject &note);
     void draw_banner(std::string string);
-
-    // draw the stuffies at the side
+    void draw_hit(int lane, float unstable_rate, signed int hit_value);
     void draw_sideinfo(int score, float average_ur, int combo, int hits, float od);
-} // namespace nikrend
+    void draw();
+
+    void write_aligned_line(std::string str, int y, alignment alignment); // can be used to draw debug stuff: e.g fps
+
+    // destructor
+    ~renderer() {
+        set_terminal_mode(nikrend::m_standard);
+    }
+};
 
 #endif
