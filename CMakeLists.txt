@@ -45,10 +45,15 @@ add_executable(Termia
         miniaudio.h
         Game/AudioManager.cpp
         Game/AudioManager.h
+        Game/InputEvent.cpp
+        Game/InputEvent.h
+        Game/InputManager.cpp
+        Game/InputManager.h
 )
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(LIBEVDEV REQUIRED IMPORTED_TARGET libevdev)
+pkg_check_modules(XKBCOMMON REQUIRED IMPORTED_TARGET xkbcommon)
 
 target_include_directories(Termia PRIVATE ${LIBEVDEV_INCLUDE_DIRS})
-target_link_libraries(Termia PRIVATE TermiaCore ${LIBEVDEV_LIBRARIES})
+target_link_libraries(Termia PRIVATE TermiaCore ${LIBEVDEV_LIBRARIES} PkgConfig::XKBCOMMON)
