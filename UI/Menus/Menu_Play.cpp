@@ -24,8 +24,7 @@ void Menu_Play::onMiss(GameObject *object) {
         _holding[object->GetLane()]=nullptr;
 }
 
-void Menu_Play::onHit(GameObject *object) {
-    auto delta = object->GetTime()-_curTime;
+void Menu_Play::onHit(GameObject *object, double delta) {
     _score+=GameObject::GetScore(delta,_chart->GetOD());
     _combo++;
     _hits++;
@@ -36,8 +35,8 @@ void Menu_Play::onHit(GameObject *object) {
         _holding[object->GetLane()]=static_cast<Hold*>(object);
 }
 
-void Menu_Play::onReleaseHit(Hold *hold) {
-    auto releaseDelta = hold->GetTime()+hold->GetLength()-_curTime;
+void Menu_Play::onReleaseHit(Hold *hold, double releaseDelta) {
+    //auto releaseDelta = hold->GetTime()+hold->GetLength()-_curTime;
     _score+=GameObject::GetScore(releaseDelta,_chart->GetOD());
     _combo++;
     _hits++;
@@ -152,20 +151,23 @@ void Menu_Play::onKeyDown(InputEvent event) {
     auto keys = config->GetKeys();
     auto key = event.GetParsedChar();
     auto keyCode = event.GetKeyCode();
+    const int64_t eventTimeMS = static_cast<int64_t>(event.GetTime().tv_sec) * 1000 + event.GetTime().tv_usec / 1000;
+    const int64_t startTimeMS = static_cast<int64_t>(_startTime.tv_sec) * 1000 + _startTime.tv_usec / 1000;
+    const auto deltaTimeMS = eventTimeMS - startTimeMS;
 
     for (int i=0;i<keys.size();i++)
         if (key==keys.at(i))
         {
             _isPressed[i]=true;
             auto nearestObj = _chart->GetNearestObject(i,_curTime);
-            auto delta = nearestObj->GetTime()-_curTime;
+            auto delta = (nearestObj->GetTime()/config->GetSpeed())-deltaTimeMS;
             _lastOffset[i]=delta;
 
             // Check if inside hittable window
             if (GameObject::IsInHitWindow(delta,od)) {
                 auto score = GameObject::GetScore(delta,od);
                 if (score!=0)
-                    onHit(nearestObj);
+                    onHit(nearestObj, delta);
                 else
                     onMiss(nearestObj);
 
@@ -187,6 +189,9 @@ void Menu_Play::onKeyUp(InputEvent event) {
     auto keys = config->GetKeys();
     auto key = event.GetParsedChar();
     auto keyCode = event.GetKeyCode();
+    const int64_t eventTimeMS = static_cast<int64_t>(event.GetTime().tv_sec) * 1000 + event.GetTime().tv_usec / 1000;
+    const int64_t startTimeMS = static_cast<int64_t>(_startTime.tv_sec) * 1000 + _startTime.tv_usec / 1000;
+    const auto deltaTimeMS = eventTimeMS - startTimeMS;
 
     for (int i=0;i<keys.size();i++)
         if (key==keys.at(i))
@@ -194,12 +199,12 @@ void Menu_Play::onKeyUp(InputEvent event) {
             _isPressed[i]=false;
             auto nearestHold = _chart->GetNearestReleasableHold(i,_curTime);
             if (nearestHold) {
-                auto releaseDelta = nearestHold->GetTime()+nearestHold->GetLength()-_curTime;
+                auto releaseDelta = (nearestHold->GetTime()/config->GetSpeed())+nearestHold->GetLength()-deltaTimeMS;
 
                 if (GameObject::IsInHitWindow(releaseDelta,od)) {
                     auto score = GameObject::GetScore(releaseDelta,od);
                     if (score!=0)
-                        onReleaseHit(nearestHold);
+                        onReleaseHit(nearestHold, releaseDelta);
                     else
                         onMiss(nearestHold);
 

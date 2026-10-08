@@ -42,6 +42,8 @@ private:
             exit(1);
         }
 
+        libevdev_set_clock_id(_dev, CLOCK_MONOTONIC);
+
         _xkbContext = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
 
         const char* rules   = "evdev";

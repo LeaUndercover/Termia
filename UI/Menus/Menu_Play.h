@@ -5,6 +5,7 @@
 #ifndef TERMIA_MENU_PLAY_H
 #define TERMIA_MENU_PLAY_H
 #include <chrono>
+#include <sys/time.h>
 
 #include "../../Game/AudioManager.h"
 #include "../../CORE/Chart.h"
@@ -14,6 +15,7 @@ using namespace CORE;
 
 class Menu_Play: public TUIMenu {
 private:
+    struct timeval _startTime;
     std::chrono::time_point<std::chrono::steady_clock> _lastTick;
     Chart* _chart;
     double _curTime = 0;
@@ -33,9 +35,9 @@ private:
     std::vector<Hold*> _holding;
 
     void onMiss(GameObject* object);
-    void onHit(GameObject* object);
+    void onHit(GameObject* object, double delta);
 
-    void onReleaseHit(Hold *hold);
+    void onReleaseHit(Hold *hold, double releaseDelta);
 
     void onGameTick();
 public:
@@ -43,6 +45,12 @@ public:
         auto audioManager = AudioManager::GetInstance();
         auto config = TermiaConfig::GetInstance();
         audioManager->PlaySound(_chart->GetPath() + "/" +_chart->GetAudioFileName(), config->GetSpeed());
+
+        timespec ts{};
+        clock_gettime(CLOCK_MONOTONIC, &ts);
+
+        _startTime.tv_sec = ts.tv_sec;
+        _startTime.tv_usec = ts.tv_nsec / 1000;
     };
 
     std::string getName() override;
