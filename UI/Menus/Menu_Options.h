@@ -14,8 +14,8 @@ private:
 public:
     std::string getName() override;
     void onDraw() override;
-    void onKeyDown(int key) override;
-    void onKeyUp(int key) override;
+    void onKeyDown(InputEvent event) override;
+    void onKeyUp(InputEvent event) override;
 };
 
 

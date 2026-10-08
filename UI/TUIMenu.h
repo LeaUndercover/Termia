@@ -6,13 +6,15 @@
 #define TERMIA_TUIMENU_H
 #include <string>
 
+#include "Game/InputEvent.h"
+
 
 class TUIMenu {
 public:
     virtual ~TUIMenu() = default;
     virtual void onDraw() = 0;
-    virtual void onKeyDown(int key) = 0;
-    virtual void onKeyUp(int key) = 0;
+    virtual void onKeyDown(InputEvent event) = 0;
+    virtual void onKeyUp(InputEvent event) = 0;
     virtual std::string getName() = 0;
 };
 

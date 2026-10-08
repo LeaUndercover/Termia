@@ -23,8 +23,8 @@ public:
     };
     std::string getName() override;
     void onDraw() override;
-    void onKeyDown(int button) override;
-    void onKeyUp(int button) override;
+    void onKeyDown(InputEvent event) override;
+    void onKeyUp(InputEvent event) override;
 };
 
 

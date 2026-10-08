@@ -17,7 +17,7 @@ void TermiaConfig::SetScrollSpeed(const float scrollSpeed) {
     _scrollSpeed=scrollSpeed;
 }
 
-void TermiaConfig::SetKeys(std::vector<int> keys) {
+void TermiaConfig::SetKeys(std::vector<char> keys) {
     _keys=std::move(keys);
 }
 
@@ -53,11 +53,11 @@ float TermiaConfig::GetVolume() const {
     return _volume;
 }
 
-std::vector<int> TermiaConfig::GetKeys() const {
+std::vector<char> TermiaConfig::GetKeys() const {
     return _keys;
 }
 
-int TermiaConfig::GetQuitKey() const {
+char TermiaConfig::GetQuitKey() const {
     return _keyQuit;
 }
 

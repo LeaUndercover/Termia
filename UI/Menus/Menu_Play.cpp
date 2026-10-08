@@ -146,10 +146,12 @@ void Menu_Play::onDraw() {
     _lastTick = std::chrono::steady_clock::now();
 }
 
-void Menu_Play::onKeyDown(const int key) {
+void Menu_Play::onKeyDown(InputEvent event) {
     auto config = TermiaConfig::GetInstance();
     auto od = _chart->GetOD();
     auto keys = config->GetKeys();
+    auto key = event.GetParsedChar();
+    auto keyCode = event.GetKeyCode();
 
     for (int i=0;i<keys.size();i++)
         if (key==keys.at(i))
@@ -179,10 +181,12 @@ void Menu_Play::onKeyDown(const int key) {
     }
 }
 
-void Menu_Play::onKeyUp(const int key) {
+void Menu_Play::onKeyUp(InputEvent event) {
     auto config = TermiaConfig::GetInstance();
     auto od = _chart->GetOD();
     auto keys = config->GetKeys();
+    auto key = event.GetParsedChar();
+    auto keyCode = event.GetKeyCode();
 
     for (int i=0;i<keys.size();i++)
         if (key==keys.at(i))

@@ -84,20 +84,20 @@ void Menu_SongSelect::onDraw() {
     std::cout.flush();
 }
 
-void Menu_SongSelect::onKeyDown(const int key) {
-    if (key==KEY_DOWN) {
+void Menu_SongSelect::onKeyDown(InputEvent event) {
+    auto config = TermiaConfig::GetInstance();
+
+    if (event.GetKeyCode()==KEY_DOWN) {
         _selection++;
         onHover();
     }
 
-    if (key==KEY_UP) {
+    if (event.GetKeyCode()==KEY_UP) {
         _selection--;
         onHover();
     }
 
-
-
-    if (key==KEY_ENTER) {
+    if (event.GetKeyCode()==KEY_ENTER) {
         auto chartManager = ChartManager::GetInstance();
         auto audioManager = AudioManager::GetInstance();
 
@@ -110,10 +110,10 @@ void Menu_SongSelect::onKeyDown(const int key) {
     }
 
 
-    if (key==KEY_Q) {
+    if (std::tolower(event.GetParsedChar())==config->GetQuitKey()) {
         AudioManager::GetInstance()->StopSounds();
         TUIManager::GetInstance()->ChangeMenu(std::make_unique<Menu_Main>());
     }
 }
 
-void Menu_SongSelect::onKeyUp(const int key) {}
+void Menu_SongSelect::onKeyUp(InputEvent event) {}
