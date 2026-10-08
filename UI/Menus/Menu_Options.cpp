@@ -77,7 +77,6 @@ void Menu_Options::onDraw() {
     frame << "KEYS " + join(keycodeStrings,' ') << std::endl;
 
     auto quitKey = std::string(1,config->GetQuitKey());
-
     if (_selected==4)
         frame << "QUIT KEY " + wrap(quitKey,"[","]") << std::endl;
     else
@@ -87,6 +86,12 @@ void Menu_Options::onDraw() {
         frame << "SEARCHPATH " + wrap(config->GetSearchPath(),"[","]") << std::endl;
     else
         frame << "SEARCHPATH " + config->GetSearchPath() << std::endl;
+
+    auto consoleKey = std::string(1,config->GetConsoleKey());
+    if (_selected==6)
+        frame << "CONSOLE KEY " + wrap(consoleKey,"[","]") << std::endl;
+    else
+        frame << "CONSOLE KEY " + consoleKey << std::endl;
 
     std::cout << CONSOLE_CLEAR;
     std::cout << frame.str();
@@ -166,6 +171,9 @@ void Menu_Options::onKeyDown(InputEvent event) {
 
         config->SetSearchPath(searchPath);
     }
+
+    if (_selected==6)
+        config->SetConsoleKey(key);
 }
 
 void Menu_Options::onKeyUp(InputEvent event) {}

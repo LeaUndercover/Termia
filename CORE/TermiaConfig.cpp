@@ -21,12 +21,16 @@ void TermiaConfig::SetKeys(std::vector<char> keys) {
     _keys=std::move(keys);
 }
 
-void TermiaConfig::SetQuitKey(int key) {
+void TermiaConfig::SetQuitKey(const char key) {
     _keyQuit = key;
 }
 
 void TermiaConfig::SetSearchPath(std::string path) {
     _searchPath=std::move(path);
+}
+
+void TermiaConfig::SetConsoleKey(const char key) {
+    _consoleKey=key;
 }
 
 TermiaConfig *TermiaConfig::GetInstance()
@@ -63,4 +67,8 @@ char TermiaConfig::GetQuitKey() const {
 
 std::string TermiaConfig::GetSearchPath() const {
     return _searchPath;
+}
+
+char TermiaConfig::GetConsoleKey() const {
+    return _consoleKey;
 }

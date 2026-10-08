@@ -16,6 +16,7 @@ namespace CORE {
         float _volume = 0.5f;
         std::vector<char> _keys = {'w','e','o','p'};
         char _keyQuit = 'b';
+        char _consoleKey = ':';
         std::string _searchPath = "/mnt/stuff/termia";
 
         TermiaConfig() = default;
@@ -28,8 +29,9 @@ namespace CORE {
         void SetVolume(float volume);
         void SetScrollSpeed(float scrollSpeed);
         void SetKeys(std::vector<char> keys);
-        void SetQuitKey(int key);
+        void SetQuitKey(char key);
         void SetSearchPath(std::string path);
+        void SetConsoleKey(char key);
 
         static TermiaConfig *GetInstance();
 
@@ -40,6 +42,7 @@ namespace CORE {
         std::vector<char> GetKeys() const;
         char GetQuitKey() const;
         std::string GetSearchPath() const;
+        char GetConsoleKey() const;
     };
 }
 
