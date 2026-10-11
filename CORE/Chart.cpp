@@ -183,7 +183,7 @@ std::vector<GameObject*> Chart::GetVisibleObjects(double curTime, double scrollS
 
         if (object->IsNote()) {
             auto* note = static_cast<Note*>(object.get());
-            const auto deltaTime = note->GetTime()-curTime;
+            const auto deltaTime = note->GetTimeOffset()-curTime;
 
             if (deltaTime >= 0 && deltaTime <= scrollSpeedMS)
                 visible.push_back(object.get());
@@ -191,8 +191,8 @@ std::vector<GameObject*> Chart::GetVisibleObjects(double curTime, double scrollS
         else
             if (object->IsHold()) {
                 auto* hold = static_cast<Hold*>(object.get());
-                const auto deltaTimeStart = hold->GetTime()-curTime;
-                const auto deltaTimeEnd = hold->GetTime()+hold->GetLength()-curTime;
+                const auto deltaTimeStart = hold->GetTimeOffset()-curTime;
+                const auto deltaTimeEnd = hold->GetTimeOffset()+hold->GetLength()-curTime;
 
                 if (    ((deltaTimeStart <= scrollSpeedMS) && (deltaTimeEnd >= 0)) ||
                         (curTime <= deltaTimeStart && curTime >= deltaTimeEnd))

@@ -153,7 +153,14 @@ void Menu_Play::onDraw() {
     _curTime += deltaTimeMs * config->GetSpeed();
     _lastTick = std::chrono::steady_clock::now();
 
+    for (int i = 0; i < 4; ++i) {
+        _isPressed[i] = false;
 
+        auto nearestObj = _chart->GetNearestObject(i,_curTime);
+        if (nearestObj->GetTime()-_curTime<20) {
+            _isPressed[i] = true;
+        }
+    }
 }
 
 void Menu_Play::onKeyDown(InputEvent event) {

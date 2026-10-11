@@ -24,6 +24,8 @@ namespace CORE {
         int GetLane() const;
         int GetTime() const;
 
+        int GetTimeOffset() const;
+
         int GetVisualTime() const;
 
         int GetHitSound() const;

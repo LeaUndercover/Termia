@@ -6,7 +6,11 @@ int GameObject::GetLane() const {
 }
 
 int GameObject::GetTime() const {
-    return _time + _offset;
+    return _time+_offset;
+}
+
+int GameObject::GetTimeOffset() const {
+    return _time+_offset;
 }
 
 int GameObject::GetHitSound() const {
