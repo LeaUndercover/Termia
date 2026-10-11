@@ -3,8 +3,8 @@
 using namespace CORE;
 
 std::pair<int,int> Hold::QuantizePosition(double curTime, double scrollSpeedMS, int positions) const {
-    const auto deltaStart = _time - curTime;
-    const auto deltaEnd = (_time+_length) - curTime;
+    const auto deltaStart = _time - curTime + _offset;
+    const auto deltaEnd = (_time+_length+_offset) - curTime;
     const auto factorStart = deltaStart / scrollSpeedMS;
     const auto factorEnd = deltaEnd / scrollSpeedMS;
 
@@ -28,7 +28,7 @@ double Hold::GetLength() const {
 
 bool Hold::IsTooLate(double curTime, double od) {
 
-    double delta = _time+_length-curTime;
+    double delta = _time+_length-curTime+_offset;
 
     if (delta>0)
         return false;

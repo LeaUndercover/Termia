@@ -14,14 +14,23 @@ namespace CORE {
         int _hitSound;
         int _type;
         bool _hit = false;
+        double _offset = 0.0;
 
     public:
+        virtual ~GameObject() = default;
+
         GameObject(const int lane, const double time, const int hitSound, const int type): _lane(lane), _time(time), _hitSound(hitSound), _type(type) {};
 
         int GetLane() const;
         int GetTime() const;
+
+        int GetVisualTime() const;
+
         int GetHitSound() const;
         int GetType() const;
+        double GetOffset() const;
+
+        void SetOffset(const double offset);
 
         void Hit();
 

@@ -74,6 +74,36 @@ void Chart::initialize() {
                 _od = std::stod(parsed);
             }
 
+            if (line.starts_with("SliderMultiplier:")) {
+                auto parsed = line.substr(std::string("SliderMultiplier:").length(), line.length()-std::string("SliderMultiplier:").length()-1);
+                _baseSliderMultiplier = std::stod(parsed);
+            }
+
+        }
+
+        if (curCategory=="TimingPoints") {
+            auto args = split(line, ',');
+            if (args.size()!=8)
+                continue;
+
+            int time = std::stoi(args[0]);
+            double beatLength = std::stod(args[1]);
+            int beatCount = std::stoi(args[2]);
+            int sampleSet = std::stoi(args[3]);
+            int sampleIndex = std::stoi(args[4]);
+            int volume = std::stoi(args[5]);
+            bool uninherited = std::stoi(args[6]);
+            int effects = std::stoi(args[7]);
+
+            _timingPoints.emplace_back(std::make_unique<TimingPoint>(
+                    time,
+                    beatLength,
+                    beatCount,
+                    sampleSet,
+                    sampleIndex,
+                    volume,
+                    uninherited,
+                    effects));
         }
 
         if (curCategory=="HitObjects") {
@@ -108,6 +138,15 @@ void Chart::initialize() {
 
         lineNum++;
     }
+
+    // Sort Timing points by time
+    std::sort(
+        _timingPoints.begin(),
+        _timingPoints.end(),
+        [](const auto& a, const auto& b) {
+            return a->GetTime() < b->GetTime();
+        }
+    );
 }
 
 std::string Chart::GetName() const {
@@ -126,6 +165,10 @@ int Chart::GetPreviewTime() const {
     return _previewTime;
 }
 
+double Chart::GetBaseSliderMultiplier() const {
+    return _baseSliderMultiplier;
+}
+
 const std::vector<std::unique_ptr<GameObject>>& Chart::GetObjects() const
 {
     return _objects;
@@ -142,9 +185,8 @@ std::vector<GameObject*> Chart::GetVisibleObjects(double curTime, double scrollS
             auto* note = static_cast<Note*>(object.get());
             const auto deltaTime = note->GetTime()-curTime;
 
-            if (deltaTime >= 0 && deltaTime <= scrollSpeedMS) {
+            if (deltaTime >= 0 && deltaTime <= scrollSpeedMS)
                 visible.push_back(object.get());
-            }
         }
         else
             if (object->IsHold()) {
@@ -154,9 +196,7 @@ std::vector<GameObject*> Chart::GetVisibleObjects(double curTime, double scrollS
 
                 if (    ((deltaTimeStart <= scrollSpeedMS) && (deltaTimeEnd >= 0)) ||
                         (curTime <= deltaTimeStart && curTime >= deltaTimeEnd))
-                {
                     visible.push_back(object.get());
-                }
             }
     }
 
@@ -205,6 +245,55 @@ Hold* Chart::GetNearestReleasableHold(int lane, double hitTime) const {
     }
 
     return value;
+}
+
+
+double Chart::GetSVModifier(int time) const {
+    auto it = std::upper_bound(
+        _timingPoints.begin(),
+        _timingPoints.end(),
+        time,
+        [](int t, const auto& point) {
+            return t < point->GetTime();
+        }
+    );
+
+    // Get the First Inherited point
+    while (it != _timingPoints.begin()) {
+        --it;
+
+        if ((*it)->GetUninherited())
+            continue;
+
+        return (*it)->GetSVModifier();
+    }
+
+    return 1.0;
+}
+
+double Chart::GetScrollTime(const double songTime) const {
+    double scrollTime = 0.0;
+    double previousTime = 0.0;
+    double sv = 1.0;
+
+    for (const auto& point : _timingPoints) {
+        double pointTime = point->GetTime();
+
+        if (pointTime >= songTime)
+            break;
+
+        scrollTime += (pointTime - previousTime) * sv;
+        previousTime = pointTime;
+
+        if (point->GetUninherited())
+            sv = 1.0;
+        else
+            sv = point->GetSVModifier();
+    }
+
+    scrollTime += (songTime - previousTime) * sv;
+
+    return scrollTime;
 }
 
 double Chart::GetOD() const {

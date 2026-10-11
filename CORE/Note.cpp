@@ -4,7 +4,7 @@
 using namespace CORE;
 
 int Note::QuantizePosition(double curTime, double scrollSpeedMS, int positions) const {
-    const auto delta = _time - curTime;
+    const auto delta = _time - curTime + _offset;
     const auto factor = delta / scrollSpeedMS;
 
     return positions-std::round(factor*positions);
@@ -12,7 +12,7 @@ int Note::QuantizePosition(double curTime, double scrollSpeedMS, int positions) 
 
 bool Note::IsTooLate(double curTime, double od) {
 
-    double delta = _time-curTime;
+    double delta = _time-curTime+_offset;
 
     if (delta>0)
         return false;

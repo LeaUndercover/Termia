@@ -73,8 +73,8 @@ void Menu_Play::onDraw() {
     TerminalHelper::WriteCenteredLine(frame, "[Playing " + _chart->GetName() + "] @ " + std::to_string(_curTime));
     TerminalHelper::DrawLine(frame);
 
-    int scrollSpeedMS = config->GetScrollSpeedMS();
 
+    int scrollSpeedMS = config->GetScrollSpeedMS();
     auto visible = _chart->GetVisibleObjects(_curTime,scrollSpeedMS);
 
     int playPositions = height-5;
@@ -84,12 +84,14 @@ void Menu_Play::onDraw() {
         for (const auto object:visible)
             if (object->IsNote()) {
                 auto* note = static_cast<Note*>(object);
+
                 if (note->QuantizePosition(_curTime,scrollSpeedMS,playPositions)==i)
                     hasNote[note->GetLane()]=true;
             }
             else
             if (object->IsHold()) {
                 auto* hold = static_cast<Hold*>(object);
+
                 auto [start,end] = hold->QuantizePosition(_curTime,scrollSpeedMS,playPositions);
                 if (start>=i&&end<=i)
                     hasNote[hold->GetLane()]=true;
@@ -117,7 +119,7 @@ void Menu_Play::onDraw() {
             frame << std::string(20,' ') << "Hits: " << _hits;
 
         if (i==6)
-            frame << std::string(20,' ') << "OD: " << _chart->GetOD();
+            frame << std::string(20,' ') << "OD: " << _chart->GetOD();;
 
         frame << std::endl;
     }
@@ -141,8 +143,17 @@ void Menu_Play::onDraw() {
     auto now = std::chrono::steady_clock::now();
     double deltaTimeMs = std::chrono::duration<double, std::milli>(now - _lastTick).count();
     _fps=1000/deltaTimeMs;
-    _curTime+=deltaTimeMs*config->GetSpeed();
+
+    for (const auto object:visible) {
+        //object->SetOffset(object->GetOffset()+deltaTimeMs * config->GetSpeed());
+
+        object->SetOffset(object->GetOffset()-deltaTimeMs*(_chart->GetSVModifier(_curTime)-1));
+    }
+
+    _curTime += deltaTimeMs * config->GetSpeed();
     _lastTick = std::chrono::steady_clock::now();
+
+
 }
 
 void Menu_Play::onKeyDown(InputEvent event) {
