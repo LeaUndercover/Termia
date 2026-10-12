@@ -150,23 +150,17 @@ void Menu_Play::onDraw() {
     double deltaTimeMs = std::chrono::duration<double, std::milli>(now - _lastTick).count();
     _fps=1000/deltaTimeMs;
 
-    for (const auto object:visible) {
-        //object->SetOffset(object->GetOffset()+deltaTimeMs * config->GetSpeed());
-
-        //object->SetOffset(object->GetOffset()-deltaTimeMs*(1-_chart->GetSVModifier(_curTime)));
-    }
-
     _curTime += deltaTimeMs * config->GetSpeed();
     _lastTick = std::chrono::steady_clock::now();
 
-    for (int i = 0; i < 4; ++i) {
+    /*for (int i = 0; i < 4; ++i) {
         _isPressed[i] = false;
 
         auto nearestObj = _chart->GetNearestObject(i,_curTime);
         if (nearestObj->GetTime()-_curTime<20) {
             _isPressed[i] = true;
         }
-    }
+    }*/
 }
 
 void Menu_Play::onKeyDown(InputEvent event) {
