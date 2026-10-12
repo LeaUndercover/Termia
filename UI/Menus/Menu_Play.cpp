@@ -74,7 +74,7 @@ void Menu_Play::onDraw() {
     TerminalHelper::DrawLine(frame);
 
 
-    int scrollSpeedMS = config->GetScrollSpeedMS();
+    double scrollSpeedMS = config->GetScrollSpeedMS();
     auto visible = _chart->GetVisibleObjects(_curTime,scrollSpeedMS);
 
     int playPositions = height-5;
@@ -85,14 +85,14 @@ void Menu_Play::onDraw() {
             if (object->IsNote()) {
                 auto* note = static_cast<Note*>(object);
 
-                if (note->QuantizePosition(_curTime,scrollSpeedMS,playPositions)==i)
+                if (note->QuantizePosition(_curTime,playPositions)==i)
                     hasNote[note->GetLane()]=true;
             }
             else
             if (object->IsHold()) {
                 auto* hold = static_cast<Hold*>(object);
 
-                auto [start,end] = hold->QuantizePosition(_curTime,scrollSpeedMS,playPositions);
+                auto [start,end] = hold->QuantizePosition(_curTime,playPositions);
                 if (start>=i&&end<=i)
                     hasNote[hold->GetLane()]=true;
             }
@@ -119,7 +119,13 @@ void Menu_Play::onDraw() {
             frame << std::string(20,' ') << "Hits: " << _hits;
 
         if (i==6)
-            frame << std::string(20,' ') << "OD: " << _chart->GetOD();;
+            frame << std::string(20,' ') << "OD: " << _chart->GetOD();
+
+        if (i==7)
+            frame << std::string(20,' ') << "VISIBLE: " << visible.size();
+
+        if (i==8)
+            frame << std::string(20,' ') << "BPM: " << _chart->GetBPM(_curTime);
 
         frame << std::endl;
     }
@@ -147,7 +153,7 @@ void Menu_Play::onDraw() {
     for (const auto object:visible) {
         //object->SetOffset(object->GetOffset()+deltaTimeMs * config->GetSpeed());
 
-        object->SetOffset(object->GetOffset()-deltaTimeMs*(_chart->GetSVModifier(_curTime)-1));
+        //object->SetOffset(object->GetOffset()-deltaTimeMs*(1-_chart->GetSVModifier(_curTime)));
     }
 
     _curTime += deltaTimeMs * config->GetSpeed();

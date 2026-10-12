@@ -1,25 +1,18 @@
 #include "Hold.h"
 #include <cmath>
+
+#include "Chart.h"
 using namespace CORE;
 
-std::pair<int,int> Hold::QuantizePosition(double curTime, double scrollSpeedMS, int positions) const {
-    const auto deltaStart = _time - curTime + _offset;
-    const auto deltaEnd = (_time+_length+_offset) - curTime;
-    const auto factorStart = deltaStart / scrollSpeedMS;
-    const auto factorEnd = deltaEnd / scrollSpeedMS;
+std::pair<int, int> Hold::QuantizePosition(const double curTime, const int positions) const
+{
+    const double startFactor = GetVisualDistance(_time, curTime);
+    const int startPosition = positions - std::round(startFactor * positions);
 
-    int startPosition = positions-std::round(factorStart*positions);
-    int endPosition = positions-std::round(factorEnd*positions);
+    const double endFactor = GetVisualDistance(_time+_length, curTime);
+    const int endPosition = positions - std::round(endFactor * positions);
 
-    if (endPosition < 0 )
-        endPosition = 0;
-
-    if (startPosition > positions )
-        startPosition = positions;
-
-    std::pair<int,int> pair = {startPosition, endPosition};
-
-    return pair;
+    return { startPosition, endPosition };
 }
 
 double Hold::GetLength() const {

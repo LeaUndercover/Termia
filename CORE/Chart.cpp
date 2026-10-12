@@ -122,7 +122,7 @@ void Chart::initialize() {
 
             // Note
             if ((type&0b00000001)>0)
-                _objects.emplace_back(std::make_unique<Note>(lane, time, hitSound, type));
+                _objects.emplace_back(std::make_unique<Note>(this,lane, time, hitSound, type));
 
             // Hold
             if ((type&0b10000000)>0) {
@@ -130,9 +130,9 @@ void Chart::initialize() {
                 auto endTime = std::stoi(objectParameterList[0]);
                 auto length = endTime-time;
 
-                _objects.emplace_back(std::make_unique<Hold>(lane, time, hitSound, type,length));
+                _objects.emplace_back(std::make_unique<Hold>(this, lane, time, hitSound, type,length));
 
-                std::cout << "added Note: " << _objects.back().get() << '\n';
+                //std::cout << "added Note: " << _objects.back().get() << '\n';
             }
         }
 
@@ -181,7 +181,23 @@ std::vector<GameObject*> Chart::GetVisibleObjects(double curTime, double scrollS
         if (object->IsHit())
             continue;
 
-        if (object->IsNote()) {
+        if (object->GetSpawnTime() > curTime)
+            continue;
+
+        if (object->GetTime() < curTime) {
+            if (object->IsNote())
+                continue;
+
+            auto* hold = static_cast<Hold*>(object.get());
+            auto endTime = hold->GetTime()+hold->GetLength();
+
+            if (endTime < curTime)
+                continue;
+        }
+
+        visible.push_back(object.get());
+
+        /*if (object->IsNote()) {
             auto* note = static_cast<Note*>(object.get());
             const auto deltaTime = note->GetTimeOffset()-curTime;
 
@@ -197,7 +213,7 @@ std::vector<GameObject*> Chart::GetVisibleObjects(double curTime, double scrollS
                 if (    ((deltaTimeStart <= scrollSpeedMS) && (deltaTimeEnd >= 0)) ||
                         (curTime <= deltaTimeStart && curTime >= deltaTimeEnd))
                     visible.push_back(object.get());
-            }
+            }*/
     }
 
     return visible;
@@ -247,6 +263,27 @@ Hold* Chart::GetNearestReleasableHold(int lane, double hitTime) const {
     return value;
 }
 
+double Chart::GetBPM(const int time) const {
+    auto it = std::upper_bound(
+        _timingPoints.begin(),
+        _timingPoints.end(),
+        time,
+        [](int t, const auto& point) {
+            return t < point->GetTime();
+        }
+    );
+
+    // Get the First NonInherited point
+    while (it != _timingPoints.begin()) {
+        --it;
+
+        if (it->get()->GetUninherited()) {
+            return 60000/(*it)->GetBeatLength();
+        }
+    }
+
+    return 60000/(*it)->GetBeatLength();
+}
 
 double Chart::GetSVModifier(int time) const {
     auto it = std::upper_bound(
@@ -298,4 +335,43 @@ double Chart::GetScrollTime(const double songTime) const {
 
 double Chart::GetOD() const {
     return _od;
+}
+
+double Chart::GetAverageBPM() const {
+    auto it = _timingPoints.begin();
+
+    while (true) {
+        if (it->get()->GetUninherited())
+            return 60000/it->get()->GetBeatLength();
+
+        ++it;
+    }
+
+    throw std::exception();
+}
+
+TimingPoint* Chart::GetSVPoint(int time) const {
+    auto it = std::upper_bound(
+        _timingPoints.begin(),
+        _timingPoints.end(),
+        time,
+        [](int t, const auto& point) {
+            return t < point->GetTime();
+        }
+    );
+
+    while (it != _timingPoints.begin()) {
+        --it;
+
+        if (it->get()->GetTime() <= time &&
+            !(*it)->GetUninherited()) {
+            return it->get();
+            }
+    }
+
+    return nullptr;
+}
+
+std::vector<std::shared_ptr<TimingPoint>> & Chart::GetTimingPoints() {
+    return _timingPoints;
 }

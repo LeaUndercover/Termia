@@ -9,9 +9,10 @@
 namespace CORE {
     class Note: public GameObject {
     public:
-        Note(const int lane, const double time, const int hitSound, const int type) : GameObject(lane,time,hitSound,type) {};
+        Note(Chart* chart,const int lane, const double time, const int hitSound, const int type) : GameObject(chart,lane,time,hitSound,type) {};
 
-        int QuantizePosition(double curTime, double scrollSpeedMS, int positions) const;
+        int QuantizePosition(double curTime, int positions) const;
+
         bool IsTooLate(double curTime, double od) override;
     };
 }

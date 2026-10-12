@@ -37,7 +37,7 @@ namespace CORE {
         std::string _chartCreator;
         std::string _chartVersion;
 
-        std::vector<std::unique_ptr<TimingPoint>> _timingPoints;
+        std::vector<std::shared_ptr<TimingPoint>> _timingPoints;
         std::vector<std::unique_ptr<GameObject>> _objects;
 
         void initialize();
@@ -55,11 +55,14 @@ namespace CORE {
         std::vector<GameObject*> GetVisibleObjects(double curTime, double scrollSpeedMS) const;
         GameObject* GetNearestObject(int lane, double hitTime) const;
         Hold *GetNearestReleasableHold(int lane, double hitTime) const;
+
+        double GetBPM(int time) const;
         double GetSVModifier(int time) const;
-
         double GetScrollTime(double songTime) const;
-
         double GetOD() const;
+        double GetAverageBPM() const;
+        TimingPoint *GetSVPoint(int time) const;
+        std::vector<std::shared_ptr<TimingPoint>>& GetTimingPoints();
     };
 }
 

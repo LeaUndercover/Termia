@@ -5,8 +5,11 @@
 #ifndef TERMIA_GAMEOBJECT_H
 #define TERMIA_GAMEOBJECT_H
 #include "cmath"
+#include "TermiaConfig.h"
 
 namespace CORE {
+    class Chart;
+
     class GameObject {
     protected:
         int _lane;
@@ -15,11 +18,17 @@ namespace CORE {
         int _type;
         bool _hit = false;
         double _offset = 0.0;
+        double _spawnTime;
+        Chart *_chart;
 
     public:
         virtual ~GameObject() = default;
 
-        GameObject(const int lane, const double time, const int hitSound, const int type): _lane(lane), _time(time), _hitSound(hitSound), _type(type) {};
+        double GetVisualDistance(double targetTime, double time) const;
+
+        double CalculateSpawnTime(double time) const;
+
+        GameObject(Chart* chart, int lane, double time, int hitSound, int type);
 
         int GetLane() const;
         int GetTime() const;
@@ -32,7 +41,9 @@ namespace CORE {
         int GetType() const;
         double GetOffset() const;
 
-        void SetOffset(const double offset);
+        double GetSpawnTime() const;
+
+        void SetOffset(double offset);
 
         void Hit();
 

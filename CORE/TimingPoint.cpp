@@ -40,7 +40,7 @@ double TimingPoint::GetSVModifier() const {
     if (_uninherited)
         return 1.0;
 
-    return -100.0 / _beatLength;
+    return -100/_beatLength;
 }
 
 
