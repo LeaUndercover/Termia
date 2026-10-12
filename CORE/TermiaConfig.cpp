@@ -45,12 +45,16 @@ float TermiaConfig::GetSpeed() const {
     return _speed;
 }
 
-float TermiaConfig::GetScrollSpeed() const {
+double TermiaConfig::GetScrollSpeed() const {
     return _scrollSpeed;
 }
 
-float TermiaConfig::GetScrollSpeedMS() const {
+double TermiaConfig::GetScrollSpeedMS() const {
     return (13720 / _scrollSpeed)*_speed;
+}
+
+double TermiaConfig::GetScrollSpeedMS(double scrollSpeed) const {
+    return (13720 / scrollSpeed)*_speed;
 }
 
 float TermiaConfig::GetVolume() const {

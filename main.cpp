@@ -1,5 +1,6 @@
 #include <iostream>
 
+#include "CORE/Chart.h"
 #include "Game/AudioManager.h"
 #include "UI/Menus/Menu_Main.h"
 #include "UI/TUIManager.h"

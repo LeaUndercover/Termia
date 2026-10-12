@@ -14,6 +14,8 @@ add_library(TermiaCore STATIC
         CORE/GameObject.h
         CORE/TermiaConfig.cpp
         CORE/TermiaConfig.h
+        CORE/TimingPoint.cpp
+        CORE/TimingPoint.h
 )
 
 target_include_directories(TermiaCore

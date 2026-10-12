@@ -73,9 +73,9 @@ void Menu_Play::onDraw() {
     TerminalHelper::WriteCenteredLine(frame, "[Playing " + _chart->GetName() + "] @ " + std::to_string(_curTime));
     TerminalHelper::DrawLine(frame);
 
-    int scrollSpeedMS = config->GetScrollSpeedMS();
 
-    auto visible = _chart->GetVisibleObjects(_curTime,scrollSpeedMS);
+    double scrollSpeedMS = config->GetScrollSpeedMS();
+    auto visible = _chart->GetVisibleObjects(_curTime);
 
     int playPositions = height-5;
     for (int i = 0; i < playPositions; i++) {
@@ -84,13 +84,15 @@ void Menu_Play::onDraw() {
         for (const auto object:visible)
             if (object->IsNote()) {
                 auto* note = static_cast<Note*>(object);
-                if (note->QuantizePosition(_curTime,scrollSpeedMS,playPositions)==i)
+
+                if (note->QuantizePosition(_curTime,playPositions)==i)
                     hasNote[note->GetLane()]=true;
             }
             else
             if (object->IsHold()) {
                 auto* hold = static_cast<Hold*>(object);
-                auto [start,end] = hold->QuantizePosition(_curTime,scrollSpeedMS,playPositions);
+
+                auto [start,end] = hold->QuantizePosition(_curTime,playPositions);
                 if (start>=i&&end<=i)
                     hasNote[hold->GetLane()]=true;
             }
@@ -119,6 +121,12 @@ void Menu_Play::onDraw() {
         if (i==6)
             frame << std::string(20,' ') << "OD: " << _chart->GetOD();
 
+        if (i==7)
+            frame << std::string(20,' ') << "VISIBLE: " << visible.size();
+
+        if (i==8)
+            frame << std::string(20,' ') << "BPM: " << _chart->GetBPM(_curTime);
+
         frame << std::endl;
     }
 
@@ -141,8 +149,18 @@ void Menu_Play::onDraw() {
     auto now = std::chrono::steady_clock::now();
     double deltaTimeMs = std::chrono::duration<double, std::milli>(now - _lastTick).count();
     _fps=1000/deltaTimeMs;
-    _curTime+=deltaTimeMs*config->GetSpeed();
+
+    _curTime += deltaTimeMs * config->GetSpeed();
     _lastTick = std::chrono::steady_clock::now();
+
+    /*for (int i = 0; i < 4; ++i) {
+        _isPressed[i] = false;
+
+        auto nearestObj = _chart->GetNearestObject(i,_curTime);
+        if (nearestObj->GetTime()-_curTime<20) {
+            _isPressed[i] = true;
+        }
+    }*/
 }
 
 void Menu_Play::onKeyDown(InputEvent event) {

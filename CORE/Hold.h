@@ -5,7 +5,6 @@
 #ifndef TERMIA_HOLD_H
 #define TERMIA_HOLD_H
 #include <utility>
-
 #include "GameObject.h"
 
 namespace CORE {
@@ -14,9 +13,10 @@ namespace CORE {
         double _length;
 
     public:
-        Hold(const int lane, const double time, const int hitSound, const int type, const double length) : GameObject(lane,time,hitSound,type), _length(length) {};
+        Hold(Chart* chart, const int lane, const double time, const int hitSound, const int type, const double length) : GameObject(chart,lane,time,hitSound,type), _length(length) {};
 
-        std::pair<int,int> QuantizePosition(double curTime, double scrollSpeedMS, int positions) const;
+        std::pair<int,int> QuantizePosition(double curTime, int positions) const;
+
         double GetLength() const;
 
         bool IsTooLate(double curTime, double od) override;

@@ -11,6 +11,8 @@
 
 #include "Hold.h"
 #include "Note.h"
+#include "TimingPoint.h"
+
 namespace CORE {
     class Chart {
     private:
@@ -25,6 +27,7 @@ namespace CORE {
 
         // Difficulty
         double _od;
+        double _baseSliderMultiplier;
 
         // Metadata
         std::string _chartTitle;
@@ -34,6 +37,8 @@ namespace CORE {
         std::string _chartCreator;
         std::string _chartVersion;
 
+        std::vector<std::shared_ptr<TimingPoint>> _SVTimingPoints;
+        std::vector<std::shared_ptr<TimingPoint>> _bpmTimingPoints;
         std::vector<std::unique_ptr<GameObject>> _objects;
 
         void initialize();
@@ -45,13 +50,18 @@ namespace CORE {
         std::string GetPath() const;
         std::string GetAudioFileName() const;
         int GetPreviewTime() const;
+        double GetBaseSliderMultiplier() const;
 
         const std::vector<std::unique_ptr<GameObject>> &GetObjects() const;
-        std::vector<GameObject*> GetVisibleObjects(double curTime, double scrollSpeedMS) const;
+        std::vector<GameObject*> GetVisibleObjects(double curTime) const;
         GameObject* GetNearestObject(int lane, double hitTime) const;
         Hold *GetNearestReleasableHold(int lane, double hitTime) const;
 
+        double GetBPM(int time) const;
+        double GetSVModifier(int time) const;
         double GetOD() const;
+        double GetAverageBPM() const;
+        TimingPoint *GetSVPoint(int time) const;
     };
 }
 

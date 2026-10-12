@@ -13,7 +13,7 @@ namespace CORE {
     private:
         float _speed = 1.0f;
         float _scrollSpeed = 27.0f;
-        float _volume = 0.5f;
+        float _volume = 0.005f;
         std::vector<char> _keys = {'w','e','o','p'};
         char _keyQuit = 'b';
         char _consoleKey = ':';
@@ -36,8 +36,9 @@ namespace CORE {
         static TermiaConfig *GetInstance();
 
         float GetSpeed() const;
-        float GetScrollSpeed() const;
-        float GetScrollSpeedMS() const;
+        double GetScrollSpeed() const;
+        double GetScrollSpeedMS() const;
+        double GetScrollSpeedMS(double scrollSpeed) const;
         float GetVolume() const;
         std::vector<char> GetKeys() const;
         char GetQuitKey() const;

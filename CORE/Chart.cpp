@@ -74,6 +74,47 @@ void Chart::initialize() {
                 _od = std::stod(parsed);
             }
 
+            if (line.starts_with("SliderMultiplier:")) {
+                auto parsed = line.substr(std::string("SliderMultiplier:").length(), line.length()-std::string("SliderMultiplier:").length()-1);
+                _baseSliderMultiplier = std::stod(parsed);
+            }
+
+        }
+
+        if (curCategory=="TimingPoints") {
+            auto args = split(line, ',');
+            if (args.size()!=8)
+                continue;
+
+            int time = std::stoi(args[0]);
+            double beatLength = std::stod(args[1]);
+            int beatCount = std::stoi(args[2]);
+            int sampleSet = std::stoi(args[3]);
+            int sampleIndex = std::stoi(args[4]);
+            int volume = std::stoi(args[5]);
+            bool uninherited = std::stoi(args[6]);
+            int effects = std::stoi(args[7]);
+
+            if (uninherited)
+                _bpmTimingPoints.emplace_back(std::make_unique<TimingPoint>(
+                        time,
+                        beatLength,
+                        beatCount,
+                        sampleSet,
+                        sampleIndex,
+                        volume,
+                        uninherited,
+                        effects));
+            else
+                _SVTimingPoints.emplace_back(std::make_unique<TimingPoint>(
+                        time,
+                        beatLength,
+                        beatCount,
+                        sampleSet,
+                        sampleIndex,
+                        volume,
+                        uninherited,
+                        effects));
         }
 
         if (curCategory=="HitObjects") {
@@ -92,7 +133,7 @@ void Chart::initialize() {
 
             // Note
             if ((type&0b00000001)>0)
-                _objects.emplace_back(std::make_unique<Note>(lane, time, hitSound, type));
+                _objects.emplace_back(std::make_unique<Note>(this,lane, time, hitSound, type));
 
             // Hold
             if ((type&0b10000000)>0) {
@@ -100,14 +141,30 @@ void Chart::initialize() {
                 auto endTime = std::stoi(objectParameterList[0]);
                 auto length = endTime-time;
 
-                _objects.emplace_back(std::make_unique<Hold>(lane, time, hitSound, type,length));
+                _objects.emplace_back(std::make_unique<Hold>(this, lane, time, hitSound, type,length));
 
-                std::cout << "added Note: " << _objects.back().get() << '\n';
+                //std::cout << "added Note: " << _objects.back().get() << '\n';
             }
         }
 
         lineNum++;
     }
+
+    // Sort Timing points by time
+    std::sort(
+        _bpmTimingPoints.begin(),
+        _bpmTimingPoints.end(),
+        [](const auto& a, const auto& b) {
+            return a->GetTime() < b->GetTime();
+        }
+    );
+    std::sort(
+        _SVTimingPoints.begin(),
+        _SVTimingPoints.end(),
+        [](const auto& a, const auto& b) {
+            return a->GetTime() < b->GetTime();
+        }
+    );
 }
 
 std::string Chart::GetName() const {
@@ -126,44 +183,61 @@ int Chart::GetPreviewTime() const {
     return _previewTime;
 }
 
+double Chart::GetBaseSliderMultiplier() const {
+    return _baseSliderMultiplier;
+}
+
 const std::vector<std::unique_ptr<GameObject>>& Chart::GetObjects() const
 {
     return _objects;
 }
 
-std::vector<GameObject*> Chart::GetVisibleObjects(double curTime, double scrollSpeedMS) const {
+std::vector<GameObject*> Chart::GetVisibleObjects(const double curTime) const {
     auto visible = std::vector<GameObject*>();
 
     for (const auto& object:_objects) {
         if (object->IsHit())
             continue;
 
-        if (object->IsNote()) {
-            auto* note = static_cast<Note*>(object.get());
-            const auto deltaTime = note->GetTime()-curTime;
+        if (object->GetSpawnTime() > curTime)
+            continue;
 
-            if (deltaTime >= 0 && deltaTime <= scrollSpeedMS) {
+        if (object->GetTime() < curTime) {
+            if (object->IsNote())
+                continue;
+
+            auto* hold = static_cast<Hold*>(object.get());
+            auto endTime = hold->GetTime()+hold->GetLength();
+
+            if (endTime < curTime)
+                continue;
+        }
+
+        visible.push_back(object.get());
+
+        /*if (object->IsNote()) {
+            auto* note = static_cast<Note*>(object.get());
+            const auto deltaTime = note->GetTimeOffset()-curTime;
+
+            if (deltaTime >= 0 && deltaTime <= scrollSpeedMS)
                 visible.push_back(object.get());
-            }
         }
         else
             if (object->IsHold()) {
                 auto* hold = static_cast<Hold*>(object.get());
-                const auto deltaTimeStart = hold->GetTime()-curTime;
-                const auto deltaTimeEnd = hold->GetTime()+hold->GetLength()-curTime;
+                const auto deltaTimeStart = hold->GetTimeOffset()-curTime;
+                const auto deltaTimeEnd = hold->GetTimeOffset()+hold->GetLength()-curTime;
 
                 if (    ((deltaTimeStart <= scrollSpeedMS) && (deltaTimeEnd >= 0)) ||
                         (curTime <= deltaTimeStart && curTime >= deltaTimeEnd))
-                {
                     visible.push_back(object.get());
-                }
-            }
+            }*/
     }
 
     return visible;
 }
 
-GameObject* Chart::GetNearestObject(int lane, double hitTime) const {
+GameObject* Chart::GetNearestObject(const int lane, const double hitTime) const {
     int minDelta = 999999;
     GameObject* value = nullptr;
 
@@ -184,7 +258,7 @@ GameObject* Chart::GetNearestObject(int lane, double hitTime) const {
     return value;
 }
 
-Hold* Chart::GetNearestReleasableHold(int lane, double hitTime) const {
+Hold* Chart::GetNearestReleasableHold(const int lane, const double hitTime) const {
     int minDelta = 999999;
     Hold* value = nullptr;
 
@@ -207,6 +281,59 @@ Hold* Chart::GetNearestReleasableHold(int lane, double hitTime) const {
     return value;
 }
 
+double Chart::GetBPM(const int time) const {
+    auto it = std::upper_bound(
+        _bpmTimingPoints.begin(),
+        _bpmTimingPoints.end(),
+        time,
+        [](int t, const auto& point) {
+            return t < point->GetTime();
+        }
+    );
+
+    if (it!=_bpmTimingPoints.begin())
+        --it;
+
+    return 60000.0/(*it)->GetBeatLength();
+}
+
+double Chart::GetSVModifier(const int time) const {
+    auto it = std::upper_bound(
+        _SVTimingPoints.begin(),
+        _SVTimingPoints.end(),
+        time,
+        [](int t, const auto& point) {
+            return t < point->GetTime();
+        }
+    );
+
+    --it;
+
+    return (*it)->GetSVModifier();
+}
+
 double Chart::GetOD() const {
     return _od;
+}
+
+double Chart::GetAverageBPM() const {
+    return 60000.0/_bpmTimingPoints.at(0)->GetBeatLength();
+}
+
+TimingPoint* Chart::GetSVPoint(const int time) const {
+    auto it = std::upper_bound(
+        _SVTimingPoints.begin(),
+        _SVTimingPoints.end(),
+        time,
+        [](int t, const auto& point) {
+            return t < point->GetTime();
+        }
+    );
+
+    if (it==_SVTimingPoints.begin())
+        return nullptr;
+
+    --it;
+
+    return it->get();
 }
