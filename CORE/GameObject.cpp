@@ -13,7 +13,7 @@ double GameObject::GetVisualDistance(const double targetTime, const double time)
         return 0.0;
 
     // Apply offset consistently to the target time.
-    const double effectiveTarget = targetTime + _offset;
+    const double effectiveTarget = targetTime;
 
     if (effectiveTarget <= time)
         return 0.0;
@@ -22,7 +22,7 @@ double GameObject::GetVisualDistance(const double targetTime, const double time)
     double visualDistance = 0.0;
 
     auto* svPoint = _chart->GetSVPoint(currentTime);
-
+    double bpmModifier = _chart->GetBPM(currentTime)/_chart->GetAverageBPM();
     while (currentTime > time)
     {
         if (svPoint == nullptr)
@@ -35,7 +35,6 @@ double GameObject::GetVisualDistance(const double targetTime, const double time)
         const double boundary = svPoint->GetTime();
         const double segmentStart = std::max(time, boundary);
         const double segmentDuration = currentTime - segmentStart;
-        const double bpmModifier = _chart->GetBPM(currentTime)/_chart->GetAverageBPM();
 
         visualDistance += segmentDuration
                         * svPoint->GetSVModifier()
@@ -48,20 +47,19 @@ double GameObject::GetVisualDistance(const double targetTime, const double time)
             break;
 
         svPoint = _chart->GetSVPoint(boundary - 1.0);
+        bpmModifier = _chart->GetBPM(boundary - 1.0) / _chart->GetAverageBPM();
     }
 
     return visualDistance / scrollSpeedMS;
 }
 
-double GameObject::CalculateSpawnTime(double time) const
+double GameObject::CalculateSpawnTime(const double time) const
 {
     double low = time - TermiaConfig::GetInstance()->GetScrollSpeedMS();
     double high = time;
 
     // Expand backward until the object is far enough away.
-    for (int i = 0;
-         i < 100 && GetVisualDistance(time, low) < 1.0;
-         ++i)
+    for (int i = 0; i < 100 && GetVisualDistance(time, low) < 1.0; ++i)
     {
         const double interval = high - low;
         high = low;
@@ -113,16 +111,8 @@ int GameObject::GetType() const {
     return _type;
 }
 
-double GameObject::GetOffset() const {
-    return _offset;
-}
-
 double GameObject::GetSpawnTime() const {
     return _spawnTime;
-}
-
-void GameObject::SetOffset(const double offset) {
-    _offset = offset;
 }
 
 void GameObject::Hit() {

@@ -21,7 +21,7 @@ double Hold::GetLength() const {
 
 bool Hold::IsTooLate(double curTime, double od) {
 
-    double delta = _time+_length-curTime+_offset;
+    double delta = _time+_length-curTime;
 
     if (delta>0)
         return false;

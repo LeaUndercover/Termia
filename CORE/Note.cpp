@@ -15,7 +15,7 @@ int Note::QuantizePosition(double curTime, int positions) const
 
 bool Note::IsTooLate(double curTime, double od) {
 
-    double delta = _time-curTime+_offset;
+    double delta = _time-curTime;
 
     if (delta>0)
         return false;

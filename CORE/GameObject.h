@@ -17,7 +17,6 @@ namespace CORE {
         int _hitSound;
         int _type;
         bool _hit = false;
-        double _offset = 0.0;
         double _spawnTime;
         Chart *_chart;
 
@@ -32,18 +31,9 @@ namespace CORE {
 
         int GetLane() const;
         int GetTime() const;
-
-        int GetTimeOffset() const;
-
-        int GetVisualTime() const;
-
         int GetHitSound() const;
         int GetType() const;
-        double GetOffset() const;
-
         double GetSpawnTime() const;
-
-        void SetOffset(double offset);
 
         void Hit();
 

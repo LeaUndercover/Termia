@@ -95,15 +95,26 @@ void Chart::initialize() {
             bool uninherited = std::stoi(args[6]);
             int effects = std::stoi(args[7]);
 
-            _timingPoints.emplace_back(std::make_unique<TimingPoint>(
-                    time,
-                    beatLength,
-                    beatCount,
-                    sampleSet,
-                    sampleIndex,
-                    volume,
-                    uninherited,
-                    effects));
+            if (uninherited)
+                _bpmTimingPoints.emplace_back(std::make_unique<TimingPoint>(
+                        time,
+                        beatLength,
+                        beatCount,
+                        sampleSet,
+                        sampleIndex,
+                        volume,
+                        uninherited,
+                        effects));
+            else
+                _SVTimingPoints.emplace_back(std::make_unique<TimingPoint>(
+                        time,
+                        beatLength,
+                        beatCount,
+                        sampleSet,
+                        sampleIndex,
+                        volume,
+                        uninherited,
+                        effects));
         }
 
         if (curCategory=="HitObjects") {
@@ -141,8 +152,15 @@ void Chart::initialize() {
 
     // Sort Timing points by time
     std::sort(
-        _timingPoints.begin(),
-        _timingPoints.end(),
+        _bpmTimingPoints.begin(),
+        _bpmTimingPoints.end(),
+        [](const auto& a, const auto& b) {
+            return a->GetTime() < b->GetTime();
+        }
+    );
+    std::sort(
+        _SVTimingPoints.begin(),
+        _SVTimingPoints.end(),
         [](const auto& a, const auto& b) {
             return a->GetTime() < b->GetTime();
         }
@@ -174,7 +192,7 @@ const std::vector<std::unique_ptr<GameObject>>& Chart::GetObjects() const
     return _objects;
 }
 
-std::vector<GameObject*> Chart::GetVisibleObjects(double curTime, double scrollSpeedMS) const {
+std::vector<GameObject*> Chart::GetVisibleObjects(const double curTime) const {
     auto visible = std::vector<GameObject*>();
 
     for (const auto& object:_objects) {
@@ -219,7 +237,7 @@ std::vector<GameObject*> Chart::GetVisibleObjects(double curTime, double scrollS
     return visible;
 }
 
-GameObject* Chart::GetNearestObject(int lane, double hitTime) const {
+GameObject* Chart::GetNearestObject(const int lane, const double hitTime) const {
     int minDelta = 999999;
     GameObject* value = nullptr;
 
@@ -240,7 +258,7 @@ GameObject* Chart::GetNearestObject(int lane, double hitTime) const {
     return value;
 }
 
-Hold* Chart::GetNearestReleasableHold(int lane, double hitTime) const {
+Hold* Chart::GetNearestReleasableHold(const int lane, const double hitTime) const {
     int minDelta = 999999;
     Hold* value = nullptr;
 
@@ -265,72 +283,33 @@ Hold* Chart::GetNearestReleasableHold(int lane, double hitTime) const {
 
 double Chart::GetBPM(const int time) const {
     auto it = std::upper_bound(
-        _timingPoints.begin(),
-        _timingPoints.end(),
+        _bpmTimingPoints.begin(),
+        _bpmTimingPoints.end(),
         time,
         [](int t, const auto& point) {
             return t < point->GetTime();
         }
     );
 
-    // Get the First NonInherited point
-    while (it != _timingPoints.begin()) {
+    if (it!=_bpmTimingPoints.begin())
         --it;
 
-        if (it->get()->GetUninherited()) {
-            return 60000/(*it)->GetBeatLength();
-        }
-    }
-
-    return 60000/(*it)->GetBeatLength();
+    return 60000.0/(*it)->GetBeatLength();
 }
 
-double Chart::GetSVModifier(int time) const {
+double Chart::GetSVModifier(const int time) const {
     auto it = std::upper_bound(
-        _timingPoints.begin(),
-        _timingPoints.end(),
+        _SVTimingPoints.begin(),
+        _SVTimingPoints.end(),
         time,
         [](int t, const auto& point) {
             return t < point->GetTime();
         }
     );
 
-    // Get the First Inherited point
-    while (it != _timingPoints.begin()) {
-        --it;
+    --it;
 
-        if ((*it)->GetUninherited())
-            continue;
-
-        return (*it)->GetSVModifier();
-    }
-
-    return 1.0;
-}
-
-double Chart::GetScrollTime(const double songTime) const {
-    double scrollTime = 0.0;
-    double previousTime = 0.0;
-    double sv = 1.0;
-
-    for (const auto& point : _timingPoints) {
-        double pointTime = point->GetTime();
-
-        if (pointTime >= songTime)
-            break;
-
-        scrollTime += (pointTime - previousTime) * sv;
-        previousTime = pointTime;
-
-        if (point->GetUninherited())
-            sv = 1.0;
-        else
-            sv = point->GetSVModifier();
-    }
-
-    scrollTime += (songTime - previousTime) * sv;
-
-    return scrollTime;
+    return (*it)->GetSVModifier();
 }
 
 double Chart::GetOD() const {
@@ -338,40 +317,23 @@ double Chart::GetOD() const {
 }
 
 double Chart::GetAverageBPM() const {
-    auto it = _timingPoints.begin();
-
-    while (true) {
-        if (it->get()->GetUninherited())
-            return 60000/it->get()->GetBeatLength();
-
-        ++it;
-    }
-
-    throw std::exception();
+    return 60000.0/_bpmTimingPoints.at(0)->GetBeatLength();
 }
 
-TimingPoint* Chart::GetSVPoint(int time) const {
+TimingPoint* Chart::GetSVPoint(const int time) const {
     auto it = std::upper_bound(
-        _timingPoints.begin(),
-        _timingPoints.end(),
+        _SVTimingPoints.begin(),
+        _SVTimingPoints.end(),
         time,
         [](int t, const auto& point) {
             return t < point->GetTime();
         }
     );
 
-    while (it != _timingPoints.begin()) {
-        --it;
+    if (it==_SVTimingPoints.begin())
+        return nullptr;
 
-        if (it->get()->GetTime() <= time &&
-            !(*it)->GetUninherited()) {
-            return it->get();
-            }
-    }
+    --it;
 
-    return nullptr;
-}
-
-std::vector<std::shared_ptr<TimingPoint>> & Chart::GetTimingPoints() {
-    return _timingPoints;
+    return it->get();
 }

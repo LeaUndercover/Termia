@@ -75,7 +75,7 @@ void Menu_Play::onDraw() {
 
 
     double scrollSpeedMS = config->GetScrollSpeedMS();
-    auto visible = _chart->GetVisibleObjects(_curTime,scrollSpeedMS);
+    auto visible = _chart->GetVisibleObjects(_curTime);
 
     int playPositions = height-5;
     for (int i = 0; i < playPositions; i++) {
