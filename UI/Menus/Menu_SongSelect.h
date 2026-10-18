@@ -17,7 +17,7 @@ private:
     void onHover();
 public:
     //Menu_SongSelect(): TUIMenu(), _path(std::filesystem::current_path()) { onPathChange(); };
-    Menu_SongSelect(): TUIMenu() {
+    Menu_SongSelect(TUIManager& manager): TUIMenu(manager) {
         onPathChange();
         onHover();
     };

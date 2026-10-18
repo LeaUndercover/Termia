@@ -11,10 +11,14 @@
 #include "../../CORE/Chart.h"
 #include "../../CORE/TermiaConfig.h"
 #include "../TUIMenu.h"
+#include "nikrend/LegacyRenderer.h"
+#include "nikrend/Renderer.h"
 using namespace CORE;
 
 class Menu_Play: public TUIMenu {
 private:
+    std::unique_ptr<Renderer> _renderer;
+
     struct timeval _startTime;
     std::chrono::time_point<std::chrono::steady_clock> _lastTick;
     Chart* _chart;
@@ -41,22 +45,15 @@ private:
 
     void onGameTick();
 public:
-    Menu_Play(Chart* chart) : _chart(chart), _isPressed(4, false), _lastOffset(4, 0), _holding(4, nullptr), _lastTick(std::chrono::steady_clock::now()) {
-        auto audioManager = AudioManager::GetInstance();
-        auto config = TermiaConfig::GetInstance();
-        audioManager->PlaySound(_chart->GetPath() + "/" +_chart->GetAudioFileName(), config->GetSpeed());
-
-        timespec ts{};
-        clock_gettime(CLOCK_MONOTONIC, &ts);
-
-        _startTime.tv_sec = ts.tv_sec;
-        _startTime.tv_usec = ts.tv_nsec / 1000;
-    };
+    Menu_Play(TUIManager& manager,Chart* chart);
 
     std::string getName() override;
     void onDraw() override;
     void onKeyDown(InputEvent event) override;
     void onKeyUp(InputEvent event) override;
+    double GetCurTime() const {
+        return _curTime;
+    }
 };
 
 

@@ -15,7 +15,7 @@ namespace CORE {
     public:
         Hold(Chart* chart, const int lane, const double time, const int hitSound, const int type, const double length) : GameObject(chart,lane,time,hitSound,type), _length(length) {};
 
-        std::pair<int,int> QuantizePosition(double curTime, int positions) const;
+        std::pair<double, double> GetPosition(double curTime) const;
 
         double GetLength() const;
 

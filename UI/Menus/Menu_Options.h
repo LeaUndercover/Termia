@@ -7,11 +7,13 @@
 #include "../TUIMenu.h"
 
 
-class Menu_Options : public TUIMenu {
+class Menu_Options final : public TUIMenu {
 private:
     unsigned _selected = 0;
     unsigned _subSelected = 0;
 public:
+    Menu_Options(TUIManager& manager): TUIMenu(manager) {};
+
     std::string getName() override;
     void onDraw() override;
     void onKeyDown(InputEvent event) override;

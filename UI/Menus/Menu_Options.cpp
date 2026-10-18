@@ -46,9 +46,9 @@ std::string wrap(const std::string& str, const std::string& left, const std::str
 void Menu_Options::onDraw() {
     std::ostringstream frame;
 
-    TerminalHelper::DrawLine(frame);
-    TerminalHelper::WriteCenteredLine(frame, "[OPTIONS]");
-    TerminalHelper::DrawLine(frame);
+    TerminalHelper::DrawLine(_manager.GetViewport(),frame);
+    TerminalHelper::WriteCenteredLine(_manager.GetViewport(),frame, "[OPTIONS]");
+    TerminalHelper::DrawLine(_manager.GetViewport(),frame);
 
     auto config = TermiaConfig::GetInstance();
 
@@ -104,7 +104,7 @@ void Menu_Options::onKeyDown(InputEvent event) {
     auto key = std::tolower(event.GetParsedChar());
 
     if (key==config->GetQuitKey())
-        TUIManager::GetInstance()->ChangeMenu(std::make_unique<Menu_Main>());
+        _manager.ChangeMenu(std::make_unique<Menu_Main>(_manager));
 
     if (keyCode==KEY_DOWN)
     {

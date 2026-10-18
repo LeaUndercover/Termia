@@ -4,33 +4,22 @@
 
 #ifndef TERMIA_TUIMANAGER_H
 #define TERMIA_TUIMANAGER_H
-#include <cstring>
 #include <memory>
-
 #include "TUIMenu.h"
-#include <unistd.h>
-#include <libevdev/libevdev.h>
-#include <fcntl.h>
-#include <iostream>
+
+#include "Viewport.h"
 
 class TUIManager {
 private:
-    TUIManager(): _menu(nullptr) {};
-
-    static TUIManager* _instance;
-
     std::unique_ptr<TUIMenu> _menu;
-    std::pair<unsigned int, unsigned int> _resolution;
+    Viewport _viewport;
 
 public:
-    TUIManager(TUIManager &other) = delete;
-    void operator=(const TUIManager &) = delete;
-    static TUIManager *GetInstance();
+    TUIManager(const Viewport& viewport): _menu(nullptr), _viewport(viewport) {};
 
     void DoEvents() const;
     void ChangeMenu(std::unique_ptr<TUIMenu> menu);
-    void SetResolution(const std::pair<unsigned int, unsigned int> &res);
-    std::pair<unsigned int, unsigned int> GetResolution() const;
+    const Viewport& GetViewport() const;
 };
 
 #endif //TERMIA_TUIMANAGER_H

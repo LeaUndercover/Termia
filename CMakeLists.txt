@@ -29,7 +29,6 @@ add_executable(Termia
         UI/ConsoleConstants.h
         UI/TUIManager.cpp
         UI/TUIManager.h
-        UI/TUIMenu.cpp
         UI/TUIMenu.h
         UI/Menus/Menu_Main.cpp
         UI/Menus/Menu_Main.h
@@ -41,7 +40,6 @@ add_executable(Termia
         UI/Menus/Menu_Options.h
         UI/Menus/Menu_Play.cpp
         UI/Menus/Menu_Play.h
-
         Game/ChartManager.cpp
         Game/ChartManager.h
         miniaudio.h
@@ -51,11 +49,25 @@ add_executable(Termia
         Game/InputEvent.h
         Game/InputManager.cpp
         Game/InputManager.h
+        nikrend/Renderer.h
+        nikrend/PlainNikRenderer.cpp
+        nikrend/PlainNikRenderer.h
+        nikrend/Renderer.cpp
+        nikrend/Geometry/Vector3.h
+        nikrend/Geometry/Vector2.h
+        UI/Viewport.h
+        nikrend/Geometry/Size2.h
+        nikrend/Geometry/BoundingBox.h
+        nikrend/Geometry/Alignment.h
+        nikrend/LegacyRenderer.cpp
+        nikrend/LegacyRenderer.h
+        UI/TUIMenu.cpp
 )
 
 find_package(PkgConfig REQUIRED)
+find_package(Curses REQUIRED)
 pkg_check_modules(LIBEVDEV REQUIRED IMPORTED_TARGET libevdev)
 pkg_check_modules(XKBCOMMON REQUIRED IMPORTED_TARGET xkbcommon)
 
-target_include_directories(Termia PRIVATE ${LIBEVDEV_INCLUDE_DIRS})
-target_link_libraries(Termia PRIVATE TermiaCore ${LIBEVDEV_LIBRARIES} PkgConfig::XKBCOMMON)
+target_include_directories(Termia PRIVATE ${LIBEVDEV_INCLUDE_DIRS} ${CURSES_INCLUDE_DIRS})
+target_link_libraries(Termia PRIVATE TermiaCore ${LIBEVDEV_LIBRARIES} ${CURSES_LIBRARIES} PkgConfig::XKBCOMMON)

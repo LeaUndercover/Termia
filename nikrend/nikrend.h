@@ -1,7 +1,7 @@
 #ifndef NIKREND_H_INCLUDED
 #define NIKREND_H_INCLUDED
 
-#include "../Game/GameObject.h" //TODO: needs to be changed to CORE as this branch is pre that
+#include "../CORE/GameObject.h" //TODO: needs to be changed to CORE as this branch is pre that
 #include "nikrend_datatypes.h"
 #include <ncurses.h>
 #include <string>
@@ -78,7 +78,7 @@ class renderer {
     void set_terminal_size(std::pair<unsigned int, unsigned int> terminal_size); // x, y
 
     //! call each frame -> add notes before calling anything else
-    void add_note_to_render_buffer(const GameObject &note);
+    void add_note_to_render_buffer(const CORE::GameObject &note);
     void draw_banner(std::string string);
     void draw_hit(int lane, float unstable_rate, signed int hit_value);
     void draw_sideinfo(int score, float average_ur, int combo, int hits, float od);

@@ -8,15 +8,14 @@
 int main() {
     std::cout << "Hello, World!" << std::endl;
 
-    auto uiManager = TUIManager::GetInstance();
-    auto mainMenu = Menu_Main();
-
-    //uiManager->SetResolution({80,28});
-    uiManager->SetResolution({320,60});
-    uiManager->ChangeMenu(std::make_unique<Menu_Main>());
+    const auto size = Size2(320,60);
+    const auto viewport = Viewport(size);
+    TUIManager uiManager = TUIManager(viewport);
+    auto mainMenu = Menu_Main(uiManager);
+    uiManager.ChangeMenu(std::make_unique<Menu_Main>(uiManager));
 
     while (true)
-        uiManager->DoEvents();
+        uiManager.DoEvents();
 
     return 0;
 }
