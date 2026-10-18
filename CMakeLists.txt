@@ -65,9 +65,8 @@ add_executable(Termia
 )
 
 find_package(PkgConfig REQUIRED)
-find_package(Curses REQUIRED)
 pkg_check_modules(LIBEVDEV REQUIRED IMPORTED_TARGET libevdev)
 pkg_check_modules(XKBCOMMON REQUIRED IMPORTED_TARGET xkbcommon)
 
-target_include_directories(Termia PRIVATE ${LIBEVDEV_INCLUDE_DIRS} ${CURSES_INCLUDE_DIRS})
-target_link_libraries(Termia PRIVATE TermiaCore ${LIBEVDEV_LIBRARIES} ${CURSES_LIBRARIES} PkgConfig::XKBCOMMON)
+target_include_directories(Termia PRIVATE ${LIBEVDEV_INCLUDE_DIRS})
+target_link_libraries(Termia PRIVATE TermiaCore ${LIBEVDEV_LIBRARIES} PkgConfig::XKBCOMMON)
