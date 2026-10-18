@@ -16,10 +16,11 @@
 
 void Menu_SongSelect::onPathChange() {
     auto chartManager = ChartManager::GetInstance();
+    auto config = TermiaConfig::GetInstance();
 
     chartManager->Clear();
 
-    for (auto const& dir_entry : std::filesystem::recursive_directory_iterator{_path}) {
+    for (auto const& dir_entry : std::filesystem::recursive_directory_iterator{config->GetSearchPath()}) {
         if (!std::string(dir_entry.path().filename()).ends_with(".osu"))
             continue;
 
@@ -83,20 +84,20 @@ void Menu_SongSelect::onDraw() {
     std::cout.flush();
 }
 
-void Menu_SongSelect::onKeyDown(const int key) {
-    if (key==KEY_DOWN) {
+void Menu_SongSelect::onKeyDown(InputEvent event) {
+    auto config = TermiaConfig::GetInstance();
+
+    if (event.GetKeyCode()==KEY_DOWN) {
         _selection++;
         onHover();
     }
 
-    if (key==KEY_UP) {
+    if (event.GetKeyCode()==KEY_UP) {
         _selection--;
         onHover();
     }
 
-
-
-    if (key==KEY_ENTER) {
+    if (event.GetKeyCode()==KEY_ENTER) {
         auto chartManager = ChartManager::GetInstance();
         auto audioManager = AudioManager::GetInstance();
 
@@ -109,10 +110,10 @@ void Menu_SongSelect::onKeyDown(const int key) {
     }
 
 
-    if (key==KEY_Q) {
+    if (std::tolower(event.GetParsedChar())==config->GetQuitKey()) {
         AudioManager::GetInstance()->StopSounds();
         TUIManager::GetInstance()->ChangeMenu(std::make_unique<Menu_Main>());
     }
 }
 
-void Menu_SongSelect::onKeyUp(const int key) {}
+void Menu_SongSelect::onKeyUp(InputEvent event) {}

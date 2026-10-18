@@ -8,12 +8,12 @@ Current Support:
 - Basic 4k osu!mania maps (extracted folders)
 
 Feature Ideas / TODO:
-- Support for variety of key combinations
+- Support for variety of key combinations - (doneish)
 - SV Change support
 - Customization Options
 - Config saving
 - Terminal Argument support
-- Better Timing Handling
+- Better Timing Handling - (doneish)
 - Units Tests
 - Support for multiple vsrg chart formats
 

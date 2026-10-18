@@ -4,10 +4,9 @@
 
 #define MINIAUDIO_IMPLEMENTATION
 #include "../miniaudio.h"
-
 #include "AudioManager.h"
-
-#include "TermiaConfig.h"
+#include "../CORE/TermiaConfig.h"
+using namespace CORE;
 
 AudioManager* AudioManager::_instance = nullptr;
 

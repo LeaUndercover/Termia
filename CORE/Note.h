@@ -1,0 +1,21 @@
+//
+// Created by cutie on 28.08.26.
+//
+
+#ifndef TERMIA_NOTE_H
+#define TERMIA_NOTE_H
+#include "GameObject.h"
+
+namespace CORE {
+    class Note: public GameObject {
+    public:
+        Note(Chart* chart,const int lane, const double time, const int hitSound, const int type) : GameObject(chart,lane,time,hitSound,type) {};
+
+        int QuantizePosition(double curTime, int positions) const;
+
+        bool IsTooLate(double curTime, double od) override;
+    };
+}
+
+
+#endif //TERMIA_NOTE_H

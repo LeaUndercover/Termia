@@ -1,18 +1,16 @@
-//
-// Created by cutie on 28.08.26.
-//
-
 #include "Note.h"
-
 #include <cmath>
 #include <iostream>
-#include <ostream>
 
-int Note::QuantizePosition(double curTime, double scrollSpeedMS, int positions) const {
-    const auto delta = _time - curTime;
-    const auto factor = delta / scrollSpeedMS;
+#include "Chart.h"
+using namespace CORE;
 
-    return positions-std::round(factor*positions);
+int Note::QuantizePosition(double curTime, int positions) const
+{
+    const double startFactor = GetVisualDistance(_time, curTime);
+    const int startPosition = positions - std::round(startFactor * positions);
+
+    return startPosition;
 }
 
 bool Note::IsTooLate(double curTime, double od) {

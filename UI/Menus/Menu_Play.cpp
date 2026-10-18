@@ -9,8 +9,8 @@
 #include <sstream>
 
 #include "Menu_Main.h"
-#include "../../Game/Hold.h"
-#include "../../Game/TermiaConfig.h"
+#include "../../CORE/Hold.h"
+#include "../../CORE/TermiaConfig.h"
 #include "../ConsoleConstants.h"
 #include "../TerminalHelper.h"
 #include "../TUIManager.h"
@@ -24,8 +24,7 @@ void Menu_Play::onMiss(GameObject *object) {
         _holding[object->GetLane()]=nullptr;
 }
 
-void Menu_Play::onHit(GameObject *object) {
-    auto delta = object->GetTime()-_curTime;
+void Menu_Play::onHit(GameObject *object, double delta) {
     _score+=GameObject::GetScore(delta,_chart->GetOD());
     _combo++;
     _hits++;
@@ -36,8 +35,8 @@ void Menu_Play::onHit(GameObject *object) {
         _holding[object->GetLane()]=static_cast<Hold*>(object);
 }
 
-void Menu_Play::onReleaseHit(Hold *hold) {
-    auto releaseDelta = hold->GetTime()+hold->GetLength()-_curTime;
+void Menu_Play::onReleaseHit(Hold *hold, double releaseDelta) {
+    //auto releaseDelta = hold->GetTime()+hold->GetLength()-_curTime;
     _score+=GameObject::GetScore(releaseDelta,_chart->GetOD());
     _combo++;
     _hits++;
@@ -74,9 +73,9 @@ void Menu_Play::onDraw() {
     TerminalHelper::WriteCenteredLine(frame, "[Playing " + _chart->GetName() + "] @ " + std::to_string(_curTime));
     TerminalHelper::DrawLine(frame);
 
-    int scrollSpeedMS = config->GetScrollSpeedMS();
 
-    auto visible = _chart->GetVisibleObjects(_curTime,scrollSpeedMS);
+    double scrollSpeedMS = config->GetScrollSpeedMS();
+    auto visible = _chart->GetVisibleObjects(_curTime);
 
     int playPositions = height-5;
     for (int i = 0; i < playPositions; i++) {
@@ -85,13 +84,15 @@ void Menu_Play::onDraw() {
         for (const auto object:visible)
             if (object->IsNote()) {
                 auto* note = static_cast<Note*>(object);
-                if (note->QuantizePosition(_curTime,scrollSpeedMS,playPositions)==i)
+
+                if (note->QuantizePosition(_curTime,playPositions)==i)
                     hasNote[note->GetLane()]=true;
             }
             else
             if (object->IsHold()) {
                 auto* hold = static_cast<Hold*>(object);
-                auto [start,end] = hold->QuantizePosition(_curTime,scrollSpeedMS,playPositions);
+
+                auto [start,end] = hold->QuantizePosition(_curTime,playPositions);
                 if (start>=i&&end<=i)
                     hasNote[hold->GetLane()]=true;
             }
@@ -120,6 +121,12 @@ void Menu_Play::onDraw() {
         if (i==6)
             frame << std::string(20,' ') << "OD: " << _chart->GetOD();
 
+        if (i==7)
+            frame << std::string(20,' ') << "VISIBLE: " << visible.size();
+
+        if (i==8)
+            frame << std::string(20,' ') << "BPM: " << _chart->GetBPM(_curTime);
+
         frame << std::endl;
     }
 
@@ -142,188 +149,89 @@ void Menu_Play::onDraw() {
     auto now = std::chrono::steady_clock::now();
     double deltaTimeMs = std::chrono::duration<double, std::milli>(now - _lastTick).count();
     _fps=1000/deltaTimeMs;
-    _curTime+=deltaTimeMs*config->GetSpeed();
+
+    _curTime += deltaTimeMs * config->GetSpeed();
     _lastTick = std::chrono::steady_clock::now();
+
+    /*for (int i = 0; i < 4; ++i) {
+        _isPressed[i] = false;
+
+        auto nearestObj = _chart->GetNearestObject(i,_curTime);
+        if (nearestObj->GetTime()-_curTime<20) {
+            _isPressed[i] = true;
+        }
+    }*/
 }
 
-void Menu_Play::onKeyDown(const int key) {
+void Menu_Play::onKeyDown(InputEvent event) {
+    auto config = TermiaConfig::GetInstance();
     auto od = _chart->GetOD();
-    if (key==KEY_S) // TODO: Fix Hardcoding
+    auto keys = config->GetKeys();
+    auto key = event.GetParsedChar();
+    auto keyCode = event.GetKeyCode();
+    const int64_t eventTimeMS = static_cast<int64_t>(event.GetTime().tv_sec) * 1000 + event.GetTime().tv_usec / 1000;
+    const int64_t startTimeMS = static_cast<int64_t>(_startTime.tv_sec) * 1000 + _startTime.tv_usec / 1000;
+    const auto deltaTimeMS = eventTimeMS - startTimeMS;
+
+    for (int i=0;i<keys.size();i++)
+        if (key==keys.at(i))
+        {
+            _isPressed[i]=true;
+            auto nearestObj = _chart->GetNearestObject(i,_curTime);
+            auto delta = (nearestObj->GetTime()/config->GetSpeed())-deltaTimeMS;
+            _lastOffset[i]=delta;
+
+            // Check if inside hittable window
+            if (GameObject::IsInHitWindow(delta,od)) {
+                auto score = GameObject::GetScore(delta,od);
+                if (score!=0)
+                    onHit(nearestObj, delta);
+                else
+                    onMiss(nearestObj);
+
+                _avgOffsetTotal+=delta;
+                _avgOffset=_avgOffsetTotal/_hits;
+            }
+        }
+
+    if (key==config->GetQuitKey())
     {
-        _isPressed[0]=true;
-        auto nearestObj = _chart->GetNearestObject(0,_curTime);
-        auto delta = nearestObj->GetTime()-_curTime;
-        _lastOffset[0]=delta;
-
-        // Check if inside hittable window
-        if (GameObject::IsInHitWindow(delta,od)) {
-            auto score = GameObject::GetScore(delta,od);
-            if (score!=0)
-                onHit(nearestObj);
-            else
-                onMiss(nearestObj);
-
-            _avgOffsetTotal+=delta;
-            _avgOffset=_avgOffsetTotal/_hits;
-        }
-    }
-
-    if (key==KEY_D) {
-        _isPressed[1]=true;
-        auto nearestObj = _chart->GetNearestObject(1,_curTime);
-        auto delta = nearestObj->GetTime()-_curTime;
-        _lastOffset[1]=delta;
-
-        // Check if inside hittable window
-        if (GameObject::IsInHitWindow(delta,od)) {
-            auto score = GameObject::GetScore(delta,od);
-            if (score!=0)
-                onHit(nearestObj);
-            else
-                onMiss(nearestObj);
-
-            _avgOffsetTotal+=delta;
-            _avgOffset=_avgOffsetTotal/_hits;
-        }
-    }
-
-    if (key==KEY_K)
-    {
-        _isPressed[2]=true;
-        auto nearestObj = _chart->GetNearestObject(2,_curTime);
-        auto delta = nearestObj->GetTime()-_curTime;
-        _lastOffset[2]=delta;
-
-        // Check if inside hittable window
-        if (GameObject::IsInHitWindow(delta,od)) {
-            auto score = GameObject::GetScore(delta,od);
-            if (score!=0)
-                onHit(nearestObj);
-            else
-                onMiss(nearestObj);
-
-            _avgOffsetTotal+=delta;
-            _avgOffset=_avgOffsetTotal/_hits;
-        }
-    }
-
-    if (key==KEY_L)
-    {
-        _isPressed[3]=true;
-        auto nearestObj = _chart->GetNearestObject(3,_curTime);
-        auto delta = nearestObj->GetTime()-_curTime;
-        _lastOffset[3]=delta;
-
-        // Check if inside hittable window
-        if (GameObject::IsInHitWindow(delta,od)) {
-            auto score = GameObject::GetScore(delta,od);
-            if (score!=0)
-                onHit(nearestObj);
-            else
-                onMiss(nearestObj);
-
-            _avgOffsetTotal+=delta;
-            _avgOffset=_avgOffsetTotal/_hits;
-        }
-    }
-
-    if (key==KEY_Q) {
         AudioManager::GetInstance()->StopSounds();
         TUIManager::GetInstance()->ChangeMenu(std::make_unique<Menu_Main>());
     }
 }
 
-void Menu_Play::onKeyUp(const int key) {
+void Menu_Play::onKeyUp(InputEvent event) {
+    auto config = TermiaConfig::GetInstance();
     auto od = _chart->GetOD();
+    auto keys = config->GetKeys();
+    auto key = event.GetParsedChar();
+    auto keyCode = event.GetKeyCode();
+    const int64_t eventTimeMS = static_cast<int64_t>(event.GetTime().tv_sec) * 1000 + event.GetTime().tv_usec / 1000;
+    const int64_t startTimeMS = static_cast<int64_t>(_startTime.tv_sec) * 1000 + _startTime.tv_usec / 1000;
+    const auto deltaTimeMS = eventTimeMS - startTimeMS;
 
-    if (key==KEY_S) // TODO: Fix Hardcoding
-    {
-        _isPressed[0]=false;
-        auto nearestHold = _chart->GetNearestReleasableHold(0,_curTime);
-        if (nearestHold) {
-            auto releaseDelta = nearestHold->GetTime()+nearestHold->GetLength()-_curTime;
+    for (int i=0;i<keys.size();i++)
+        if (key==keys.at(i))
+        {
+            _isPressed[i]=false;
+            auto nearestHold = _chart->GetNearestReleasableHold(i,_curTime);
+            if (nearestHold) {
+                auto releaseDelta = (nearestHold->GetTime()/config->GetSpeed())+nearestHold->GetLength()-deltaTimeMS;
 
-            if (GameObject::IsInHitWindow(releaseDelta,od)) {
-                auto score = GameObject::GetScore(releaseDelta,od);
-                if (score!=0)
-                    onReleaseHit(nearestHold);
+                if (GameObject::IsInHitWindow(releaseDelta,od)) {
+                    auto score = GameObject::GetScore(releaseDelta,od);
+                    if (score!=0)
+                        onReleaseHit(nearestHold, releaseDelta);
+                    else
+                        onMiss(nearestHold);
+
+                    _avgOffsetTotal+=releaseDelta;
+                    _avgOffset=_avgOffsetTotal/_hits;
+                }
                 else
-                    onMiss(nearestHold);
-
-                _avgOffsetTotal+=releaseDelta;
-                _avgOffset=_avgOffsetTotal/_hits;
+                    if (_holding[i]!=nullptr)
+                        onMiss(_holding[i]);
             }
-            else
-                if (_holding[0]!=nullptr)
-                    onMiss(_holding[0]);
         }
-    }
-
-    if (key==KEY_D) {
-        _isPressed[1]=false;
-        auto nearestHold = _chart->GetNearestReleasableHold(1,_curTime);
-        if (nearestHold) {
-            auto releaseDelta = nearestHold->GetTime()+nearestHold->GetLength()-_curTime;
-
-            if (GameObject::IsInHitWindow(releaseDelta,od)) {
-                auto score = GameObject::GetScore(releaseDelta,od);
-                if (score!=0)
-                    onReleaseHit(nearestHold);
-                else
-                    onMiss(nearestHold);
-
-                _avgOffsetTotal+=releaseDelta;
-                _avgOffset=_avgOffsetTotal/_hits;
-            }
-            else
-                if (_holding[1]!=nullptr)
-                    onMiss(_holding[1]);
-        }
-    }
-
-    if (key==KEY_K)
-    {
-        _isPressed[2]=false;
-        auto nearestHold = _chart->GetNearestReleasableHold(2,_curTime);
-        if (nearestHold) {
-            auto releaseDelta = nearestHold->GetTime()+nearestHold->GetLength()-_curTime;
-
-            if (GameObject::IsInHitWindow(releaseDelta,od)) {
-                auto score = GameObject::GetScore(releaseDelta,od);
-                if (score!=0)
-                    onReleaseHit(nearestHold);
-                else
-                    onMiss(nearestHold);
-
-                _avgOffsetTotal+=releaseDelta;
-                _avgOffset=_avgOffsetTotal/_hits;
-            }
-            else
-                if (_holding[2]!=nullptr)
-                    onMiss(_holding[2]);
-        }
-    }
-
-    if (key==KEY_L)
-    {
-        _isPressed[3]=false;
-        auto nearestHold = _chart->GetNearestReleasableHold(3,_curTime);
-        if (nearestHold) {
-            auto releaseDelta = nearestHold->GetTime()+nearestHold->GetLength()-_curTime;
-
-            if (GameObject::IsInHitWindow(releaseDelta,od)) {
-                auto score = GameObject::GetScore(releaseDelta,od);
-                if (score!=0)
-                    onReleaseHit(nearestHold);
-                else
-                    onMiss(nearestHold);
-
-                _avgOffsetTotal+=releaseDelta;
-                _avgOffset=_avgOffsetTotal/_hits;
-            }
-            else
-                if (_holding[3]!=nullptr)
-                    onMiss(_holding[3]);
-        }
-    }
 }

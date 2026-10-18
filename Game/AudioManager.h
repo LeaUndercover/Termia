@@ -9,7 +9,6 @@
 #include <ostream>
 #include "vector"
 #include "../miniaudio.h"
-
 class AudioManager {
 private:
     ma_engine _engine;

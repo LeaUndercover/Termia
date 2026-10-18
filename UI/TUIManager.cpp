@@ -4,8 +4,9 @@
 
 #include "TUIManager.h"
 #include <iostream>
-#include <libevdev/libevdev.h>
 #include <linux/input.h>
+
+#include "Game/InputManager.h"
 
 TUIManager* TUIManager::_instance = nullptr;
 
@@ -18,31 +19,20 @@ TUIManager *TUIManager::GetInstance()
 }
 
 void TUIManager::DoEvents() const {
-    _menu->onDraw();
-    input_event ev;
-
     while (true) {
-        int rc = libevdev_next_event(
-            _dev,
-            LIBEVDEV_READ_FLAG_NORMAL,
-            &ev
-        );
+        _menu->onDraw();
 
-        if (rc == -EAGAIN)
-            break;
+        auto inputManager = InputManager::GetInstance();
 
-        if (rc < 0)
-            break;
+        auto input = inputManager->GetInput();
 
-        if (ev.type != EV_KEY)
+        if (input==std::nullopt)
             continue;
 
-        if (ev.value == 1) {
-            _menu->onKeyDown(ev.code);
-        }
-        else if (ev.value == 0) {
-            _menu->onKeyUp(ev.code);
-        }
+        if (input->GetValue() == 1)
+            _menu->onKeyDown(input.value());
+        else if (input->GetValue() == 0)
+            _menu->onKeyUp(input.value());
     }
 }
 

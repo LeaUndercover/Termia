@@ -7,8 +7,8 @@
 #include <memory>
 #include <vector>
 
-#include "Chart.h"
-
+#include "../CORE/Chart.h"
+using namespace CORE;
 
 class ChartManager {
 private:

@@ -33,15 +33,17 @@ void Menu_Main::onDraw() {
     std::cout.flush();
 }
 
-void Menu_Main::onKeyDown(const int key) {
-    if (key==KEY_DOWN) {
-        _selection++;
-    }
-    if (key==KEY_UP) {
-        _selection--;
-    }
+void Menu_Main::onKeyDown(InputEvent event) {
+    auto keyCode = event.GetKeyCode();
+    auto key = event.GetParsedChar();
 
-    if (key==KEY_ENTER) {
+    if (keyCode==KEY_DOWN)
+        _selection++;
+
+    if (keyCode==KEY_UP)
+        _selection--;
+
+    if (keyCode==KEY_ENTER) {
         auto uiManager = TUIManager::GetInstance();
         switch (_selection) {
             case 0:
@@ -57,4 +59,4 @@ void Menu_Main::onKeyDown(const int key) {
     }
 }
 
-void Menu_Main::onKeyUp(const int button) {}
+void Menu_Main::onKeyUp(InputEvent event) {}
