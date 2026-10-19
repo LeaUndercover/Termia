@@ -14,7 +14,8 @@
 #include "../ConsoleConstants.h"
 #include "../TerminalHelper.h"
 #include "../TUIManager.h"
-#include "nikrend/PlainNikRenderer.h"
+#include "nikrend/NikRenderer2D.h"
+#include "nikrend/NikRenderer3D.h"
 
 void Menu_Play::onMiss(GameObject *object) {
     _combo=0;
@@ -60,7 +61,7 @@ void Menu_Play::onGameTick() {
 }
 
 Menu_Play::Menu_Play(TUIManager& manager,Chart *chart): TUIMenu(manager), _lastTick(std::chrono::steady_clock::now()), _chart(chart), _lastOffset(4, 0), _isPressed(4, false), _holding(4, nullptr) {
-    _renderer=std::make_unique<PlainNikRenderer>(*this, _manager.GetViewport());
+    _renderer=std::make_unique<NikRenderer3D>(*this, _manager.GetViewport());
 
     auto audioManager = AudioManager::GetInstance();
     auto config = TermiaConfig::GetInstance();
@@ -101,6 +102,8 @@ void Menu_Play::onDraw() {
 
     for (auto& object :visible)
         _renderer->AddObjectToBuffer(object);
+
+    _renderer->OnDraw();
 
     const auto frameBuffer = _renderer->GetFrameBuffer();
 

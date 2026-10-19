@@ -50,8 +50,8 @@ add_executable(Termia
         Game/InputManager.cpp
         Game/InputManager.h
         nikrend/Renderer.h
-        nikrend/PlainNikRenderer.cpp
-        nikrend/PlainNikRenderer.h
+        nikrend/NikRenderer2D.cpp
+        nikrend/NikRenderer2D.h
         nikrend/Renderer.cpp
         nikrend/Geometry/Vector3.h
         nikrend/Geometry/Vector2.h
@@ -62,6 +62,13 @@ add_executable(Termia
         nikrend/LegacyRenderer.cpp
         nikrend/LegacyRenderer.h
         UI/TUIMenu.cpp
+        nikrend/FrameBufferRenderer.h
+        nikrend/FrameBufferRenderer.cpp
+        nikrend/NikRenderer3D.cpp
+        nikrend/NikRenderer3D.h
+        nikrend/Geometry/Vector3.cpp
+        nikrend/Geometry/Mesh.h
+        nikrend/Geometry/Mesh.cpp
 )
 
 find_package(PkgConfig REQUIRED)
