@@ -61,7 +61,7 @@ public:
     void SetLastOffset(const std::vector<int> &offset);
 
     virtual std::vector<std::string> GetFrameBuffer() = 0;
-
+    virtual void OnDraw() = 0;
 
 };
 
