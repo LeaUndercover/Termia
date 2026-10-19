@@ -2,7 +2,7 @@
 // Created by cutie on 18.10.26.
 //
 
-#include "PlainNikRenderer.h"
+#include "NikRenderer2D.h"
 
 #include <cassert>
 #include <cmath>
@@ -16,47 +16,8 @@
 #include "Geometry/Vector2.h"
 #include "UI/Menus/Menu_Play.h"
 
-void PlainNikRenderer::printInBuffer(const int y, const int x, const std::string &str) {
-    for (const auto c:str)
-        _charBuffer[y][x] = c;
-}
-
-// assumes points are screen space & z is pre culled
-void PlainNikRenderer::rasterizeTri(std::vector<Vector2> triPoints) {
-    assert(triPoints.size() == 3);
-
-    // rounding needed to match to line stuff
-    for (auto& p : triPoints) {
-        p.x = std::round(p.x);
-        p.y = std::round(p.y);
-    }
-
-    const auto boundingBox = BoundingBox(_viewport,triPoints);
-
-    Vector2 plocal;
-    for (int x = static_cast<int>(std::ceil(boundingBox.vmin.x)); x <= static_cast<int>(std::floor(boundingBox.vmax.x)); x++) {
-        plocal.x = x;
-
-        for (int y = static_cast<int>(std::ceil(boundingBox.vmin.y)); y <= static_cast<int>(std::floor(boundingBox.vmax.y)); y++) {
-            plocal.y = y;
-
-            const double alpha = Vector2::EdgefuncP(plocal, triPoints[1], triPoints[2]);
-            const double beta  = Vector2::EdgefuncP(plocal, triPoints[2], triPoints[0]);
-            const double gamma = Vector2::EdgefuncP(plocal, triPoints[0], triPoints[1]);
-
-            const bool hasNegative = alpha < 0 || beta < 0 || gamma < 0;
-            const bool hasPositive = alpha > 0 || beta > 0 || gamma > 0;
-
-            if (hasNegative && hasPositive)
-                continue;
-
-            printInBuffer(y, x, "#");
-        }
-    }
-}
-
 // assumes quad :p
-void PlainNikRenderer::rasterizeProjectedFace(const std::vector<Vector2> &points) {
+void NikRenderer2D::rasterizeProjectedFace(const std::vector<Vector2> &points) {
     std::vector<Vector2> tris;
 
     if (points.size() > 3) {
@@ -84,7 +45,7 @@ void PlainNikRenderer::rasterizeProjectedFace(const std::vector<Vector2> &points
     }
 }
 
-void PlainNikRenderer::drawOffset() {
+void NikRenderer2D::drawOffset() {
     const auto size = _viewport.GetSize();
     const double noteWidth = getNoteWidth();
 
@@ -99,7 +60,7 @@ void PlainNikRenderer::drawOffset() {
     }
 }
 
-void PlainNikRenderer::drawLaneDividers() {
+void NikRenderer2D::drawLaneDividers() {
     const auto size = _viewport.GetSize();
     const double noteWidth = getNoteWidth();
 
@@ -117,7 +78,7 @@ void PlainNikRenderer::drawLaneDividers() {
     }
 }
 
-void PlainNikRenderer::drawHits() {
+void NikRenderer2D::drawHits() {
     double noteWidth = getNoteWidth();
     const auto size = _viewport.GetSize();
 
@@ -147,13 +108,13 @@ void PlainNikRenderer::drawHits() {
     }
 }
 
-void PlainNikRenderer::drawObjects() {
+void NikRenderer2D::drawObjects() {
     const double noteWidth = getNoteWidth();
     const auto curTime = _play.GetCurTime();
+    const auto size = _viewport.GetSize();
 
     for (const auto object: _gameObjects) {
         const auto lane = object->GetLane() + 1;
-        const auto size = _viewport.GetSize();
 
         if (object->IsNote()) {
             auto* note = dynamic_cast<const CORE::Note*>(object);
@@ -211,20 +172,7 @@ void PlainNikRenderer::drawObjects() {
     }
 }
 
-void PlainNikRenderer::writeAlignedLine(const std::string &str, const int y, const Alignment& alignment) {
-    auto size = _viewport.GetSize();
-
-    if (alignment == left)
-        printInBuffer(y,0,str);
-
-    if (alignment == center)
-        printInBuffer(y, std::round((size.getWidth() - str.length()) / 2) + 1, str);
-
-    // think + 1 is needed to align because my renderer is aligned one to the right :sob:
-    if (alignment == right)
-        printInBuffer(y, size.getWidth() - 1 - str.length(), str);
-}
-double PlainNikRenderer::getNoteWidth() const {
+double NikRenderer2D::getNoteWidth() const {
     const auto size = _viewport.GetSize();
 
     const double noteWidth = ((REL_PLAYFIELD_END - REL_PLAYFIELD_START) * static_cast<double>(size.getWidth())) / 4.0f;
@@ -232,32 +180,7 @@ double PlainNikRenderer::getNoteWidth() const {
     return noteWidth;
 }
 
-void PlainNikRenderer::drawLine(const Vector2 p1, const Vector2 p2, const char *ch) {
-    const double dx = fabs(p1.x - p2.x);
-    const double dy = fabs(p1.y - p2.y);
-
-    const auto size = _viewport.GetSize();
-    const double steps = (dx > dy) ? dx : dy;
-
-    if (steps != 0) {
-        const double step = 1 / steps;
-
-        for (double t = 0; t < 1; t += step) {
-            const Vector2 linePos(
-                std::round(p1.x + t * (p2.x - p1.x)),
-                std::round(p1.y + t * (p2.y - p1.y))
-            );
-
-            // check for non pre culled objects -> can probably be made obselete
-            if (linePos.x < size.getWidth() - 1 && linePos.y < size.getHeight() && linePos.x >= 0 && linePos.y >= 0)
-                printInBuffer(linePos.y, linePos.x, ch);
-        }
-    }
-    else
-        throw std::runtime_error("Divide by zero in line drawing function");
-}
-
-void PlainNikRenderer::drawHitBanner() {
+void NikRenderer2D::drawHitBanner() {
     auto size = _viewport.GetSize();
 
     std::string hit_text;
@@ -286,26 +209,12 @@ void PlainNikRenderer::drawHitBanner() {
     writeAlignedLine(hit_text, size.getHeight() / 2, center);
 }
 
-std::vector<std::string> PlainNikRenderer::GetFrameBuffer() {
-    const auto size = _viewport.GetSize();
-    _charBuffer=std::vector<std::vector<char>>(size.getHeight(), std::vector<char>(size.getWidth(), ' '));
+void NikRenderer2D::OnDraw() {
+    clearFrameBuffer();
 
     drawLaneDividers();
     drawObjects();
     drawOffset();
     drawHitBanner();
     drawHits();
-
-    std::vector<std::string> frameBuffer;
-
-    for (int y = 0; y < size.getHeight(); ++y) {
-        std::string line;
-
-        for (int x = 0; x < size.getWidth(); ++x)
-            line += _charBuffer[y][x];
-
-        frameBuffer.emplace_back(line);
-    }
-
-    return frameBuffer;
 }
