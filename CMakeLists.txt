@@ -29,7 +29,6 @@ add_executable(Termia
         UI/ConsoleConstants.h
         UI/TUIManager.cpp
         UI/TUIManager.h
-        UI/TUIMenu.cpp
         UI/TUIMenu.h
         UI/Menus/Menu_Main.cpp
         UI/Menus/Menu_Main.h
@@ -41,7 +40,6 @@ add_executable(Termia
         UI/Menus/Menu_Options.h
         UI/Menus/Menu_Play.cpp
         UI/Menus/Menu_Play.h
-
         Game/ChartManager.cpp
         Game/ChartManager.h
         miniaudio.h
@@ -51,6 +49,26 @@ add_executable(Termia
         Game/InputEvent.h
         Game/InputManager.cpp
         Game/InputManager.h
+        nikrend/Renderer.h
+        nikrend/NikRenderer2D.cpp
+        nikrend/NikRenderer2D.h
+        nikrend/Renderer.cpp
+        nikrend/Geometry/Vector3.h
+        nikrend/Geometry/Vector2.h
+        UI/Viewport.h
+        nikrend/Geometry/Size2.h
+        nikrend/Geometry/BoundingBox.h
+        nikrend/Geometry/Alignment.h
+        nikrend/LegacyRenderer.cpp
+        nikrend/LegacyRenderer.h
+        UI/TUIMenu.cpp
+        nikrend/FrameBufferRenderer.h
+        nikrend/FrameBufferRenderer.cpp
+        nikrend/NikRenderer3D.cpp
+        nikrend/NikRenderer3D.h
+        nikrend/Geometry/Vector3.cpp
+        nikrend/Geometry/Mesh.h
+        nikrend/Geometry/Mesh.cpp
 )
 
 find_package(PkgConfig REQUIRED)

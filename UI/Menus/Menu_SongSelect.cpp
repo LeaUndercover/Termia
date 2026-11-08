@@ -48,9 +48,9 @@ std::string Menu_SongSelect::getName() {
 void Menu_SongSelect::onDraw() {
     std::ostringstream frame;
 
-    TerminalHelper::DrawLine(frame);
-    TerminalHelper::WriteCenteredLine(frame, "[Song Select]");
-    TerminalHelper::DrawLine(frame);
+    TerminalHelper::DrawLine(_manager.GetViewport(),frame);
+    TerminalHelper::WriteCenteredLine(_manager.GetViewport(),frame, "[Song Select]");
+    TerminalHelper::DrawLine(_manager.GetViewport(),frame);
 
     auto chartManager = ChartManager::GetInstance();
 
@@ -65,7 +65,7 @@ void Menu_SongSelect::onDraw() {
         index++;
     }
 
-    TerminalHelper::DrawLine(frame);
+    TerminalHelper::DrawLine(_manager.GetViewport(),frame);
 
     /*for (auto const& dir_entry : std::filesystem::directory_iterator{_path}) {
         if (!dir_entry.is_directory())
@@ -103,8 +103,9 @@ void Menu_SongSelect::onKeyDown(InputEvent event) {
 
         if (_selection >= 0 && _selection < chartManager->GetCharts().size()) {
             audioManager->StopSounds();
-            TUIManager::GetInstance()->ChangeMenu(
-                std::make_unique<Menu_Play>(chartManager->GetCharts()[_selection].get())
+
+            _manager.ChangeMenu(
+                std::make_unique<Menu_Play>(_manager,chartManager->GetCharts()[_selection].get())
             );
         }
     }
@@ -112,7 +113,7 @@ void Menu_SongSelect::onKeyDown(InputEvent event) {
 
     if (std::tolower(event.GetParsedChar())==config->GetQuitKey()) {
         AudioManager::GetInstance()->StopSounds();
-        TUIManager::GetInstance()->ChangeMenu(std::make_unique<Menu_Main>());
+        _manager.ChangeMenu(std::make_unique<Menu_Main>(_manager));
     }
 }
 

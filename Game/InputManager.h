@@ -24,7 +24,7 @@ private:
     xkb_state*   _xkbState = nullptr;
 
     InputManager() {
-        _devFd = open("/dev/input/event5", O_RDONLY | O_NONBLOCK); // TODO: Remove Hardcode
+        _devFd = open("/dev/input/event4", O_RDONLY | O_NONBLOCK); // TODO: Remove Hardcode
 
         if (_devFd < 0) {
             perror("open");

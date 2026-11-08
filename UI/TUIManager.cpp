@@ -8,16 +8,6 @@
 
 #include "Game/InputManager.h"
 
-TUIManager* TUIManager::_instance = nullptr;
-
-TUIManager *TUIManager::GetInstance()
-{
-    if(_instance==nullptr){
-        _instance = new TUIManager();
-    }
-    return _instance;
-}
-
 void TUIManager::DoEvents() const {
     while (true) {
         _menu->onDraw();
@@ -40,10 +30,6 @@ void TUIManager::ChangeMenu(std::unique_ptr<TUIMenu> menu) {
     _menu = std::move(menu);
 }
 
-void TUIManager::SetResolution(const std::pair<unsigned int, unsigned int> &res) {
-    _resolution = res;
-}
-
-std::pair<unsigned int, unsigned int> TUIManager::GetResolution() const {
-    return _resolution;
+const Viewport & TUIManager::GetViewport() const {
+    return _viewport;
 }

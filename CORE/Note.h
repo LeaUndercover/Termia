@@ -11,7 +11,7 @@ namespace CORE {
     public:
         Note(Chart* chart,const int lane, const double time, const int hitSound, const int type) : GameObject(chart,lane,time,hitSound,type) {};
 
-        int QuantizePosition(double curTime, int positions) const;
+        double GetPosition(double curTime) const;
 
         bool IsTooLate(double curTime, double od) override;
     };

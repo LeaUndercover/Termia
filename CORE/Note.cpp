@@ -5,12 +5,11 @@
 #include "Chart.h"
 using namespace CORE;
 
-int Note::QuantizePosition(double curTime, int positions) const
+double Note::GetPosition(const double curTime) const
 {
     const double startFactor = GetVisualDistance(_time, curTime);
-    const int startPosition = positions - std::round(startFactor * positions);
 
-    return startPosition;
+    return startFactor;
 }
 
 bool Note::IsTooLate(double curTime, double od) {

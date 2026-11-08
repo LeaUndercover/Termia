@@ -4,15 +4,12 @@
 #include "Chart.h"
 using namespace CORE;
 
-std::pair<int, int> Hold::QuantizePosition(const double curTime, const int positions) const
+std::pair<double, double> Hold::GetPosition(const double curTime) const
 {
     const double startFactor = GetVisualDistance(_time, curTime);
-    const int startPosition = positions - std::round(startFactor * positions);
-
     const double endFactor = GetVisualDistance(_time+_length, curTime);
-    const int endPosition = positions - std::round(endFactor * positions);
 
-    return { startPosition, endPosition };
+    return { startFactor, endFactor };
 }
 
 double Hold::GetLength() const {

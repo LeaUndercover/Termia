@@ -14,6 +14,8 @@
 #include "../ConsoleConstants.h"
 #include "../TerminalHelper.h"
 #include "../TUIManager.h"
+#include "nikrend/NikRenderer2D.h"
+#include "nikrend/NikRenderer3D.h"
 
 void Menu_Play::onMiss(GameObject *object) {
     _combo=0;
@@ -58,6 +60,32 @@ void Menu_Play::onGameTick() {
     }
 }
 
+Menu_Play::Menu_Play(TUIManager& manager,Chart *chart): TUIMenu(manager), _lastTick(std::chrono::steady_clock::now()), _chart(chart), _lastOffset(4, 0), _isPressed(4, false), _holding(4, nullptr) {
+    auto config = TermiaConfig::GetInstance();
+    auto rendererType = config->GetRendererType();
+    switch (rendererType) {
+        case Legacy:
+            throw std::runtime_error("Legacy renderer not supported");
+            break;
+        case Nik2D:
+            _renderer=std::make_unique<NikRenderer2D>(*this, _manager.GetViewport());
+            break;
+        case Nik3D:
+            _renderer=std::make_unique<NikRenderer3D>(*this, _manager.GetViewport());
+            break;
+    }
+
+
+    auto audioManager = AudioManager::GetInstance();
+    audioManager->PlaySound(_chart->GetPath() + "/" +_chart->GetAudioFileName(), config->GetSpeed());
+
+    timespec ts{};
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+
+    _startTime.tv_sec = ts.tv_sec;
+    _startTime.tv_usec = ts.tv_nsec / 1000;
+}
+
 std::string Menu_Play::getName() {
     return "Play";
 }
@@ -66,104 +94,47 @@ void Menu_Play::onDraw() {
     auto config = TermiaConfig::GetInstance();
     onGameTick();
 
-    auto [width,height] = TUIManager::GetInstance()->GetResolution();
     std::ostringstream frame;
 
-    TerminalHelper::DrawLine(frame);
-    TerminalHelper::WriteCenteredLine(frame, "[Playing " + _chart->GetName() + "] @ " + std::to_string(_curTime));
-    TerminalHelper::DrawLine(frame);
+    TerminalHelper::DrawLine(_manager.GetViewport(),frame);
+    TerminalHelper::WriteCenteredLine(_manager.GetViewport(),frame, "[Playing " + _chart->GetName() + "] @ " + std::to_string(_curTime));
+    TerminalHelper::DrawLine(_manager.GetViewport(),frame);
 
+    const auto visible = _chart->GetVisibleObjects(_curTime);
 
-    double scrollSpeedMS = config->GetScrollSpeedMS();
-    auto visible = _chart->GetVisibleObjects(_curTime);
+    _renderer->SetFPS(_fps);
+    _renderer->SetAvgOffset(_avgOffset);
+    _renderer->SetAvgOffsetTotal(_avgOffsetTotal);
+    _renderer->SetHits(_hits);
+    _renderer->SetCombo(_combo);
+    _renderer->SetLastOffset(_lastOffset);
+    _renderer->SetPressed(_isPressed);
 
-    int playPositions = height-5;
-    for (int i = 0; i < playPositions; i++) {
-        std::vector<bool> hasNote(4,false);
+    _renderer->ClearObjectBuffer();
 
-        for (const auto object:visible)
-            if (object->IsNote()) {
-                auto* note = static_cast<Note*>(object);
+    for (auto& object :visible)
+        _renderer->AddObjectToBuffer(object);
 
-                if (note->QuantizePosition(_curTime,playPositions)==i)
-                    hasNote[note->GetLane()]=true;
-            }
-            else
-            if (object->IsHold()) {
-                auto* hold = static_cast<Hold*>(object);
+    _renderer->OnDraw();
 
-                auto [start,end] = hold->QuantizePosition(_curTime,playPositions);
-                if (start>=i&&end<=i)
-                    hasNote[hold->GetLane()]=true;
-            }
-
-
-        frame   << (hasNote[0]?std::string(_noteThickness, _noteChar):std::string(_noteThickness, ' ')) << "|"
-                << (hasNote[1]?std::string(_noteThickness, _noteChar):std::string(_noteThickness, ' ')) << "|"
-                << (hasNote[2]?std::string(_noteThickness, _noteChar):std::string(_noteThickness, ' ')) << "|"
-                << (hasNote[3]?std::string(_noteThickness, _noteChar):std::string(_noteThickness, ' '));
-
-        if (i==1)
-            frame << std::string(20,' ') << "FPS: " << _fps;
-
-        if (i==2)
-            frame << std::string(20,' ') << "Score: " << _score;
-
-        if (i==3)
-            frame << std::string(20,' ') << "AvgMS: " << _avgOffset;
-
-        if (i==4)
-            frame << std::string(20,' ') << "Combo: " << _combo;
-
-        if (i==5)
-            frame << std::string(20,' ') << "Hits: " << _hits;
-
-        if (i==6)
-            frame << std::string(20,' ') << "OD: " << _chart->GetOD();
-
-        if (i==7)
-            frame << std::string(20,' ') << "VISIBLE: " << visible.size();
-
-        if (i==8)
-            frame << std::string(20,' ') << "BPM: " << _chart->GetBPM(_curTime);
-
-        frame << std::endl;
-    }
-
-    frame   << (_isPressed[0]?std::string(_noteThickness, _hitChar):std::string(_noteThickness, ' ')) << "|"
-            << (_isPressed[1]?std::string(_noteThickness, _hitChar):std::string(_noteThickness, ' ')) << "|"
-            << (_isPressed[2]?std::string(_noteThickness, _hitChar):std::string(_noteThickness, ' ')) << "|"
-            << (_isPressed[3]?std::string(_noteThickness, _hitChar):std::string(_noteThickness, ' ')) << std::endl;
-
-    frame   << std::fixed << std::setw(_noteThickness) << _lastOffset[0] << "|"
-            << std::fixed << std::setw(_noteThickness) << _lastOffset[1] << "|"
-            << std::fixed << std::setw(_noteThickness) << _lastOffset[2] << "|"
-            << std::fixed << std::setw(_noteThickness) << _lastOffset[3];
-
-    frame << std::defaultfloat;
+    const auto frameBuffer = _renderer->GetFrameBuffer();
 
     std::cout << CONSOLE_CLEAR;
     std::cout << frame.str();
+    for (auto& line: frameBuffer)
+        std::cout << line << std::endl;
+
     std::cout.flush();
 
-    auto now = std::chrono::steady_clock::now();
-    double deltaTimeMs = std::chrono::duration<double, std::milli>(now - _lastTick).count();
+    const auto now = std::chrono::steady_clock::now();
+    const double deltaTimeMs = std::chrono::duration<double, std::milli>(now - _lastTick).count();
     _fps=1000/deltaTimeMs;
 
     _curTime += deltaTimeMs * config->GetSpeed();
     _lastTick = std::chrono::steady_clock::now();
-
-    /*for (int i = 0; i < 4; ++i) {
-        _isPressed[i] = false;
-
-        auto nearestObj = _chart->GetNearestObject(i,_curTime);
-        if (nearestObj->GetTime()-_curTime<20) {
-            _isPressed[i] = true;
-        }
-    }*/
 }
 
-void Menu_Play::onKeyDown(InputEvent event) {
+void Menu_Play::onKeyDown(const InputEvent event) {
     auto config = TermiaConfig::GetInstance();
     auto od = _chart->GetOD();
     auto keys = config->GetKeys();
@@ -197,11 +168,11 @@ void Menu_Play::onKeyDown(InputEvent event) {
     if (key==config->GetQuitKey())
     {
         AudioManager::GetInstance()->StopSounds();
-        TUIManager::GetInstance()->ChangeMenu(std::make_unique<Menu_Main>());
+        _manager.ChangeMenu(std::make_unique<Menu_Main>(_manager));
     }
 }
 
-void Menu_Play::onKeyUp(InputEvent event) {
+void Menu_Play::onKeyUp(const InputEvent event) {
     auto config = TermiaConfig::GetInstance();
     auto od = _chart->GetOD();
     auto keys = config->GetKeys();
