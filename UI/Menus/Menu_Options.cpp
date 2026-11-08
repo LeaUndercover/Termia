@@ -93,6 +93,25 @@ void Menu_Options::onDraw() {
     else
         frame << "CONSOLE KEY " + consoleKey << std::endl;
 
+    auto rendererType = config->GetRendererType();
+    std::string rendererTypeString = "INVALID";
+    switch (rendererType) {
+        case Legacy:
+            rendererTypeString = "LEGACY";
+            break;
+        case Nik2D:
+            rendererTypeString = "NIK2D";
+            break;
+        case Nik3D:
+            rendererTypeString = "NIK3D";
+            break;
+    }
+
+    if (_selected==7)
+        frame << "RENDERER " + wrap(rendererTypeString,"[","]") << std::endl;
+    else
+        frame << "RENDERER " + rendererTypeString << std::endl;
+
     std::cout << CONSOLE_CLEAR;
     std::cout << frame.str();
     std::cout.flush();
@@ -132,6 +151,14 @@ void Menu_Options::onKeyDown(InputEvent event) {
 
         if (_selected==2&&config->GetVolume()>=0.05)
             config->SetVolume(config->GetVolume()-0.05);
+
+        auto rendererType = config->GetRendererType();
+        if (_selected==7) {
+            if (rendererType==Nik3D)
+                config->SetRendererType(Nik2D);
+            if (rendererType==Nik2D)
+                config->SetRendererType(Legacy);
+        }
         return;
     }
 
@@ -146,6 +173,14 @@ void Menu_Options::onKeyDown(InputEvent event) {
 
         if (_selected==2&&config->GetVolume()<=1.95)
             config->SetVolume(config->GetVolume()+0.05);
+
+        auto rendererType = config->GetRendererType();
+        if (_selected==7) {
+            if (rendererType==Legacy)
+                config->SetRendererType(Nik2D);
+            if (rendererType==Nik2D)
+                config->SetRendererType(Nik3D);
+        }
         return;
     }
 

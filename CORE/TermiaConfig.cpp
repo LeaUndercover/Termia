@@ -33,6 +33,10 @@ void TermiaConfig::SetConsoleKey(const char key) {
     _consoleKey=key;
 }
 
+void TermiaConfig::SetRendererType(const RendererType type) {
+    _rendererType=type;
+}
+
 TermiaConfig *TermiaConfig::GetInstance()
 {
     if(_instance==nullptr){
@@ -75,4 +79,8 @@ std::string TermiaConfig::GetSearchPath() const {
 
 char TermiaConfig::GetConsoleKey() const {
     return _consoleKey;
+}
+
+RendererType TermiaConfig::GetRendererType() const {
+    return _rendererType;
 }

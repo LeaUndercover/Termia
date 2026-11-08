@@ -9,6 +9,12 @@
 #include <linux/input-event-codes.h>
 
 namespace CORE {
+    enum RendererType {
+        Legacy,
+        Nik2D,
+        Nik3D
+    };
+
     class TermiaConfig {
     private:
         float _speed = 1.0f;
@@ -18,6 +24,7 @@ namespace CORE {
         char _keyQuit = 'b';
         char _consoleKey = ':';
         std::string _searchPath = "/mnt/stuff/termia";
+        RendererType _rendererType = Nik3D;
 
         TermiaConfig() = default;
         static TermiaConfig* _instance;
@@ -32,6 +39,7 @@ namespace CORE {
         void SetQuitKey(char key);
         void SetSearchPath(std::string path);
         void SetConsoleKey(char key);
+        void SetRendererType(RendererType type);
 
         static TermiaConfig *GetInstance();
 
@@ -44,6 +52,7 @@ namespace CORE {
         char GetQuitKey() const;
         std::string GetSearchPath() const;
         char GetConsoleKey() const;
+        RendererType GetRendererType() const;
     };
 }
 

@@ -61,10 +61,22 @@ void Menu_Play::onGameTick() {
 }
 
 Menu_Play::Menu_Play(TUIManager& manager,Chart *chart): TUIMenu(manager), _lastTick(std::chrono::steady_clock::now()), _chart(chart), _lastOffset(4, 0), _isPressed(4, false), _holding(4, nullptr) {
-    _renderer=std::make_unique<NikRenderer3D>(*this, _manager.GetViewport());
+    auto config = TermiaConfig::GetInstance();
+    auto rendererType = config->GetRendererType();
+    switch (rendererType) {
+        case Legacy:
+            throw std::runtime_error("Legacy renderer not supported");
+            break;
+        case Nik2D:
+            _renderer=std::make_unique<NikRenderer2D>(*this, _manager.GetViewport());
+            break;
+        case Nik3D:
+            _renderer=std::make_unique<NikRenderer3D>(*this, _manager.GetViewport());
+            break;
+    }
+
 
     auto audioManager = AudioManager::GetInstance();
-    auto config = TermiaConfig::GetInstance();
     audioManager->PlaySound(_chart->GetPath() + "/" +_chart->GetAudioFileName(), config->GetSpeed());
 
     timespec ts{};
